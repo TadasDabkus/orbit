@@ -1,24 +1,55 @@
-```js
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
 
 /* =========================================================
    ORBIT — AERIS PRODUCT CONFIGURATOR
 ========================================================= */
 
-const container = document.getElementById("productCanvas");
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const canvas = document.getElementById("productCanvas");
+
+const loadingScreen =
+    document.querySelector(".loading-screen");
+
+const loadingProgress =
+    document.getElementById("loadingProgress");
+
+const configurationName =
+    document.getElementById("configurationName");
+
+const materialValue =
+    document.getElementById("materialValue");
+
+const finishValue =
+    document.getElementById("finishValue");
+
+const lightingValue =
+    document.getElementById("lightingValue");
+
+const productPrice =
+    document.getElementById("productPrice");
+
+const configurationMessage =
+    document.getElementById("configurationMessage");
 
 
 /* =========================================================
    RENDERER
 ========================================================= */
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: false
-});
+const renderer =
+    new THREE.WebGPURenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: false
+    });
+
+await renderer.init();
 
 renderer.setPixelRatio(
     Math.min(window.devicePixelRatio, 2)
@@ -29,11 +60,10 @@ renderer.setSize(
     window.innerHeight
 );
 
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-container.appendChild(renderer.domElement);
-
-console.log("ORBIT RENDERER READY");
+renderer.setClearColor(
+    0x090a0a,
+    1
+);
 
 
 /* =========================================================
@@ -42,62 +72,72 @@ console.log("ORBIT RENDERER READY");
 
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x080909);
+scene.background =
+    new THREE.Color(0x090a0a);
 
 
 /* =========================================================
    CAMERA
 ========================================================= */
 
-const camera = new THREE.PerspectiveCamera(
-    42,
-    window.innerWidth / window.innerHeight,
-    0.01,
-    100
-);
+const camera =
+    new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth / window.innerHeight,
+        0.01,
+        100
+    );
 
-camera.position.set(0, 1.8, 6.5);
+camera.position.set(
+    0,
+    1.8,
+    5.5
+);
 
 
 /* =========================================================
    CONTROLS
 ========================================================= */
 
-const controls = new OrbitControls(
-    camera,
-    renderer.domElement
-);
+const controls =
+    new OrbitControls(
+        camera,
+        renderer.domElement
+    );
 
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
 
+controls.enablePan = false;
+
 controls.minDistance = 2.5;
-controls.maxDistance = 12;
+controls.maxDistance = 9;
 
-controls.minPolarAngle = 0.35;
-controls.maxPolarAngle = 2.75;
-
-controls.target.set(0, 0, 0);
-
-controls.update();
+controls.target.set(
+    0,
+    1,
+    0
+);
 
 
 /* =========================================================
    LIGHTING
 ========================================================= */
 
-const ambientLight = new THREE.AmbientLight(
-    0xffffff,
-    1.4
-);
+const ambientLight =
+    new THREE.AmbientLight(
+        0xffffff,
+        1.8
+    );
 
 scene.add(ambientLight);
 
 
-const keyLight = new THREE.DirectionalLight(
-    0xffffff,
-    4
-);
+const keyLight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        4
+    );
 
 keyLight.position.set(
     4,
@@ -108,106 +148,46 @@ keyLight.position.set(
 scene.add(keyLight);
 
 
-const fillLight = new THREE.DirectionalLight(
-    0x9bbcff,
-    2
-);
+const fillLight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        2
+    );
 
 fillLight.position.set(
-    -5,
-    2,
-    3
+    -4,
+    3,
+    2
 );
 
 scene.add(fillLight);
 
 
-const rimLight = new THREE.DirectionalLight(
-    0xc8ff00,
-    3
-);
+const rimLight =
+    new THREE.DirectionalLight(
+        0xb8c7ff,
+        2.5
+    );
 
 rimLight.position.set(
     0,
     4,
-    -6
+    -5
 );
 
 scene.add(rimLight);
 
 
 /* =========================================================
-   AERIS PRODUCT
+   AERIS MODEL
 ========================================================= */
 
-const product = new THREE.Group();
+let aerisModel = null;
 
-scene.add(product);
+const modelGroup =
+    new THREE.Group();
 
-
-/* =========================================================
-   MATERIAL SETTINGS
-========================================================= */
-
-const materialSettings = {
-
-    matte: {
-        roughness: 0.48,
-        metalness: 0.05,
-        transmission: 0
-    },
-
-    metal: {
-        roughness: 0.20,
-        metalness: 0.90,
-        transmission: 0
-    },
-
-    glass: {
-        roughness: 0.08,
-        metalness: 0.10,
-        transmission: 0.35,
-        thickness: 0.6
-    }
-
-};
-
-
-/* =========================================================
-   COLOR DATA
-========================================================= */
-
-const colorData = {
-
-    black: 0x151719,
-    white: 0xe7e9e6,
-    orange: 0xff6b22,
-    lime: 0xc8ff00
-
-};
-
-
-/* =========================================================
-   PRICE DATA
-========================================================= */
-
-const materialPrices = {
-
-    matte: 0,
-    metal: 35,
-    glass: 70
-
-};
-
-
-const colorPrices = {
-
-    black: 0,
-    white: 0,
-    orange: 15,
-    lime: 20
-
-};
+scene.add(modelGroup);
 
 
 /* =========================================================
@@ -217,243 +197,221 @@ const colorPrices = {
 const config = {
 
     material: "matte",
+
     color: "black",
+
     finish: "dark",
+
     lighting: "studio"
 
 };
 
 
 /* =========================================================
-   GLB LOADER
+   PRICING
 ========================================================= */
 
-const gltfLoader = new GLTFLoader();
+const materialPrices = {
+
+    matte: 0,
+
+    metal: 35,
+
+    glass: 70
+
+};
+
+
+const colorPrices = {
+
+    black: 0,
+
+    white: 0,
+
+    orange: 15,
+
+    lime: 20
+
+};
 
 
 /* =========================================================
-   MODEL DATA
+   COLORS
 ========================================================= */
 
-let aerisModel = null;
+const colors = {
+
+    black: 0x151719,
+
+    white: 0xe8e9e5,
+
+    orange: 0xff6a00,
+
+    lime: 0xc8ff00
+
+};
+
+
+/* =========================================================
+   ORIGINAL MATERIALS
+========================================================= */
 
 const originalMaterials = new Map();
 
-const configurableMeshes = [];
-
-const fixedMeshes = [];
-
 
 /* =========================================================
-   OBJECT CLASSIFICATION
+   LOAD GLB
 ========================================================= */
 
-/*
-   These parts should behave like the main product shell.
-*/
-
-function isConfigurablePart(object) {
-
-    if (!object.isMesh) {
-        return false;
-    }
-
-    const name = object.name.toLowerCase();
-
-    const configurableKeywords = [
-
-        "headcoushin",
-        "headcushin",
-
-        "headcoushincase",
-        "headcushincase",
-
-        "outershell",
-        "innershell",
-
-        "shellholder",
-        "shellholderpanels",
-
-        "innerpart",
-        "innerparts",
-
-        "usbaux_case",
-        "usbaux",
-
-        "volumeslider",
-
-        "cushion_l",
-        "cushion_r",
-
-        "cushion_l",
-        "cushion_r"
-
-    ];
-
-    return configurableKeywords.some(
-        keyword => name.includes(keyword)
-    );
-
-}
+const loader =
+    new GLTFLoader();
 
 
-/* =========================================================
-   FIXED PARTS
-========================================================= */
-
-function isFixedPart(object) {
-
-    if (!object.isMesh) {
-        return false;
-    }
-
-    const name = object.name.toLowerCase();
-
-    const fixedKeywords = [
-
-        "wire",
-        "screw",
-        "hinge",
-
-        "usb",
-        "aux",
-
-        "innercoushin",
-        "innercushin",
-
-        "logo"
-
-    ];
-
-    return fixedKeywords.some(
-        keyword => name.includes(keyword)
-    );
-
-}
-
-
-/* =========================================================
-   LOAD AERIS
-========================================================= */
-
-gltfLoader.load(
+loader.load(
 
     "./AERIS_v01.glb",
 
     (gltf) => {
 
-        aerisModel = gltf.scene;
+        aerisModel =
+            gltf.scene;
 
-        console.log(
-            "AERIS GLB LOADED"
+        modelGroup.add(
+            aerisModel
         );
-
-        console.log(
-            "AERIS OBJECTS:"
-        );
-
-        aerisModel.traverse(object => {
-
-            if (object.name) {
-
-                console.log(
-                    object.name
-                );
-
-            }
-
-        });
 
 
         /* ---------------------------------------------
            STORE ORIGINAL MATERIALS
         --------------------------------------------- */
 
-        aerisModel.traverse(object => {
+        aerisModel.traverse(
+            (object) => {
 
-            if (
-                object.isMesh &&
-                object.material
-            ) {
+                if (!object.isMesh) {
+                    return;
+                }
+
+                object.castShadow = true;
+                object.receiveShadow = true;
+
 
                 if (Array.isArray(object.material)) {
 
-                    originalMaterials.set(
-                        object.uuid,
+                    object.material =
                         object.material.map(
-                            material =>
-                                material.clone()
-                        )
-                    );
+                            (material) => {
 
-                } else {
+                                const clone =
+                                    material.clone();
+
+                                originalMaterials.set(
+                                    object.uuid,
+                                    clone
+                                );
+
+                                return clone;
+
+                            }
+                        );
+
+                }
+
+                else if (object.material) {
+
+                    const clone =
+                        object.material.clone();
+
+                    object.material =
+                        clone;
 
                     originalMaterials.set(
                         object.uuid,
-                        object.material.clone()
+                        clone
                     );
 
                 }
 
             }
-
-        });
-
-
-        /* ---------------------------------------------
-           CLASSIFY OBJECTS
-        --------------------------------------------- */
-
-        aerisModel.traverse(object => {
-
-            if (!object.isMesh) {
-                return;
-            }
-
-
-            if (
-                isConfigurablePart(object)
-            ) {
-
-                configurableMeshes.push(
-                    object
-                );
-
-            } else {
-
-                fixedMeshes.push(
-                    object
-                );
-
-            }
-
-        });
-
-
-        /* ---------------------------------------------
-           ADD MODEL
-        --------------------------------------------- */
-
-        product.add(
-            aerisModel
         );
 
 
         /* ---------------------------------------------
-           CENTER + SCALE MODEL
+           CENTER MODEL
         --------------------------------------------- */
 
-        fitModelToScene();
+        const box =
+            new THREE.Box3()
+                .setFromObject(
+                    aerisModel
+                );
+
+        const center =
+            box.getCenter(
+                new THREE.Vector3()
+            );
+
+        aerisModel.position.sub(
+            center
+        );
 
 
         /* ---------------------------------------------
-           INITIAL CONFIGURATION
+           SCALE MODEL
+        --------------------------------------------- */
+
+        const size =
+            box.getSize(
+                new THREE.Vector3()
+            );
+
+        const maxDimension =
+            Math.max(
+                size.x,
+                size.y,
+                size.z
+            );
+
+        const desiredSize = 3.4;
+
+        const scale =
+            desiredSize /
+            maxDimension;
+
+        aerisModel.scale.setScalar(
+            scale
+        );
+
+
+        /* ---------------------------------------------
+           UPDATE CAMERA
+        --------------------------------------------- */
+
+        controls.target.set(
+            0,
+            0,
+            0
+        );
+
+        camera.position.set(
+            0,
+            1.8,
+            5.5
+        );
+
+
+        /* ---------------------------------------------
+           APPLY INITIAL CONFIG
         --------------------------------------------- */
 
         updateMaterial();
+
         updateColor();
+
         updateFinish();
+
         updateLighting();
+
         updateUI();
 
 
@@ -461,18 +419,25 @@ gltfLoader.load(
            HIDE LOADING SCREEN
         --------------------------------------------- */
 
-        const loader =
-            document.querySelector(
-                ".loading-screen"
-            );
+        if (loadingProgress) {
 
-        if (loader) {
-
-            loader.classList.add(
-                "loaded"
-            );
+            loadingProgress.textContent =
+                "100%";
 
         }
+
+
+        setTimeout(() => {
+
+            if (loadingScreen) {
+
+                loadingScreen.classList.add(
+                    "loaded"
+                );
+
+            }
+
+        }, 300);
 
 
         console.log(
@@ -481,232 +446,155 @@ gltfLoader.load(
 
     },
 
+
     (progress) => {
 
-    if (progress.total) {
+        if (
+            progress.total
+        ) {
 
-        const percent =
-            Math.round(
-                (
-                    progress.loaded /
-                    progress.total
-                ) * 100
-            );
+            const percent =
+                Math.round(
+                    (
+                        progress.loaded /
+                        progress.total
+                    ) * 100
+                );
 
-        const loadingProgress =
-            document.getElementById(
-                "loadingProgress"
-            );
+            if (loadingProgress) {
+
+                loadingProgress.textContent =
+                    `${percent}%`;
+
+            }
+
+        }
+
+    },
+
+
+    (error) => {
+
+        console.error(
+            "AERIS GLB LOAD ERROR:",
+            error
+        );
 
         if (loadingProgress) {
 
             loadingProgress.textContent =
-                percent + "%";
+                "ERROR";
 
         }
 
     }
 
-},
+);
 
 
 /* =========================================================
-   FIT MODEL TO SCENE
+   MATERIAL
 ========================================================= */
 
-function fitModelToScene() {
+function updateMaterial() {
 
     if (!aerisModel) {
         return;
     }
 
 
-    const box =
-        new THREE.Box3()
-            .setFromObject(
-                aerisModel
-            );
+    aerisModel.traverse(
+        (object) => {
 
-
-    const size =
-        box.getSize(
-            new THREE.Vector3()
-        );
-
-
-    const center =
-        box.getCenter(
-            new THREE.Vector3()
-        );
-
-
-    /* ---------------------------------------------
-       CENTER MODEL
-    --------------------------------------------- */
-
-    aerisModel.position.x -=
-        center.x;
-
-    aerisModel.position.y -=
-        center.y;
-
-    aerisModel.position.z -=
-        center.z;
-
-
-    /* ---------------------------------------------
-       SCALE MODEL
-    --------------------------------------------- */
-
-    const maxDimension =
-        Math.max(
-            size.x,
-            size.y,
-            size.z
-        );
-
-
-    const targetSize = 3.6;
-
-
-    const scale =
-        targetSize /
-        maxDimension;
-
-
-    aerisModel.scale.setScalar(
-        scale
-    );
-
-
-    /* ---------------------------------------------
-       SMALL VERTICAL OFFSET
-    --------------------------------------------- */
-
-    aerisModel.position.y =
-        0;
-
-
-    /* ---------------------------------------------
-       CAMERA
-    --------------------------------------------- */
-
-    camera.position.set(
-        0,
-        1.5,
-        6
-    );
-
-
-    controls.target.set(
-        0,
-        0,
-        0
-    );
-
-    controls.update();
-
-}
-
-
-/* =========================================================
-   MATERIAL CREATOR
-========================================================= */
-
-function createConfiguredMaterial(
-    originalMaterial
-) {
-
-    const material =
-        originalMaterial.clone();
-
-
-    const settings =
-        materialSettings[
-            config.material
-        ];
-
-
-    material.roughness =
-        settings.roughness;
-
-
-    material.metalness =
-        settings.metalness;
-
-
-    if (
-        "transmission"
-        in material
-    ) {
-
-        material.transmission =
-            settings.transmission;
-
-    }
-
-
-    if (
-        "thickness"
-        in material
-    ) {
-
-        material.thickness =
-            settings.thickness;
-
-    }
-
-
-    material.color.set(
-        colorData[
-            config.color
-        ]
-    );
-
-
-    return material;
-
-}
-
-
-/* =========================================================
-   UPDATE MATERIAL
-========================================================= */
-
-function updateMaterial() {
-
-    configurableMeshes.forEach(
-        mesh => {
-
-            const original =
-                originalMaterials.get(
-                    mesh.uuid
-                );
-
-
-            if (!original) {
+            if (!object.isMesh) {
                 return;
             }
 
 
-            if (Array.isArray(original)) {
+            const materials =
+                Array.isArray(object.material)
+                    ? object.material
+                    : [object.material];
 
-                mesh.material =
-                    original.map(
-                        material =>
-                            createConfiguredMaterial(
-                                material
-                            )
-                    );
 
-            } else {
+            materials.forEach(
+                (material) => {
 
-                mesh.material =
-                    createConfiguredMaterial(
-                        original
-                    );
+                    if (!material) {
+                        return;
+                    }
 
-            }
+
+                    if (
+                        material.isMeshStandardMaterial ||
+                        material.isMeshPhysicalMaterial
+                    ) {
+
+                        if (
+                            config.material === "matte"
+                        ) {
+
+                            material.metalness = 0.05;
+
+                            material.roughness = 0.72;
+
+                            if (
+                                "transmission"
+                                in material
+                            ) {
+
+                                material.transmission = 0;
+
+                            }
+
+                        }
+
+
+                        if (
+                            config.material === "metal"
+                        ) {
+
+                            material.metalness = 0.9;
+
+                            material.roughness = 0.25;
+
+                            if (
+                                "transmission"
+                                in material
+                            ) {
+
+                                material.transmission = 0;
+
+                            }
+
+                        }
+
+
+                        if (
+                            config.material === "glass"
+                        ) {
+
+                            material.metalness = 0.05;
+
+                            material.roughness = 0.12;
+
+                            if (
+                                "transmission"
+                                in material
+                            ) {
+
+                                material.transmission = 0.55;
+
+                                material.thickness = 0.3;
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
 
         }
     );
@@ -715,40 +603,84 @@ function updateMaterial() {
 
 
 /* =========================================================
-   UPDATE COLOR
+   COLOR
 ========================================================= */
 
 function updateColor() {
 
-    configurableMeshes.forEach(
-        mesh => {
+    if (!aerisModel) {
+        return;
+    }
+
+
+    const selectedColor =
+        new THREE.Color(
+            colors[config.color]
+        );
+
+
+    aerisModel.traverse(
+        (object) => {
+
+            if (!object.isMesh) {
+                return;
+            }
+
+
+            const name =
+                object.name.toUpperCase();
+
+
+            /*
+             * MAIN BODY PARTS
+             */
+
+            const isMainBody =
+                name.includes("SHELL") ||
+                name.includes("HEADCUSHINCASE") ||
+                name.includes("SHELLHOLDER") ||
+                name.includes("OUTER");
+
+
+            /*
+             * HEADBAND
+             */
+
+            const isHeadband =
+                name.includes("HEADCOUSHIN") &&
+                !name.includes("CASE");
+
+
+            /*
+             * APPLY COLOR
+             */
 
             if (
-                Array.isArray(
-                    mesh.material
-                )
+                isMainBody ||
+                isHeadband
             ) {
 
-                mesh.material.forEach(
-                    material => {
+                const materials =
+                    Array.isArray(object.material)
+                        ? object.material
+                        : [object.material];
 
-                        material.color.set(
-                            colorData[
-                                config.color
-                            ]
-                        );
+
+                materials.forEach(
+                    (material) => {
+
+                        if (
+                            material &&
+                            material.color
+                        ) {
+
+                            material.color.copy(
+                                selectedColor
+                            );
+
+                        }
 
                     }
-                );
-
-            } else if (
-                mesh.material
-            ) {
-
-                mesh.material.color.set(
-                    colorData[
-                        config.color
-                    ]
                 );
 
             }
@@ -760,7 +692,7 @@ function updateColor() {
 
 
 /* =========================================================
-   UPDATE FINISH
+   FINISH
 ========================================================= */
 
 function updateFinish() {
@@ -771,19 +703,16 @@ function updateFinish() {
 
         scene.background =
             new THREE.Color(
-                0x080909
+                0x090a0a
             );
 
     }
 
-
-    if (
-        config.finish === "light"
-    ) {
+    else {
 
         scene.background =
             new THREE.Color(
-                0xe9ebe8
+                0xe8e8e4
             );
 
     }
@@ -792,7 +721,7 @@ function updateFinish() {
 
 
 /* =========================================================
-   UPDATE LIGHTING
+   LIGHTING
 ========================================================= */
 
 function updateLighting() {
@@ -802,7 +731,7 @@ function updateLighting() {
     ) {
 
         ambientLight.intensity =
-            1.4;
+            1.8;
 
         keyLight.intensity =
             4;
@@ -811,10 +740,18 @@ function updateLighting() {
             2;
 
         rimLight.intensity =
-            3;
+            2.5;
+
+        keyLight.color.set(
+            0xffffff
+        );
+
+        fillLight.color.set(
+            0xffffff
+        );
 
         rimLight.color.set(
-            0xc8ff00
+            0xb8c7ff
         );
 
     }
@@ -825,19 +762,27 @@ function updateLighting() {
     ) {
 
         ambientLight.intensity =
-            0.45;
+            0.55;
 
         keyLight.intensity =
             1.5;
 
         fillLight.intensity =
-            0.8;
+            0.5;
 
         rimLight.intensity =
             4;
 
+        keyLight.color.set(
+            0x8fa8ff
+        );
+
+        fillLight.color.set(
+            0x596dff
+        );
+
         rimLight.color.set(
-            0x4d7cff
+            0x9fb5ff
         );
 
     }
@@ -848,19 +793,27 @@ function updateLighting() {
     ) {
 
         ambientLight.intensity =
-            0.3;
+            0.45;
 
         keyLight.intensity =
-            1;
+            1.5;
 
         fillLight.intensity =
-            2.5;
+            2;
 
         rimLight.intensity =
             5;
 
-        rimLight.color.set(
+        keyLight.color.set(
             0xc8ff00
+        );
+
+        fillLight.color.set(
+            0xff5c00
+        );
+
+        rimLight.color.set(
+            0x00d9ff
         );
 
     }
@@ -869,114 +822,53 @@ function updateLighting() {
 
 
 /* =========================================================
-   UPDATE UI
+   UI UPDATE
 ========================================================= */
 
 function updateUI() {
 
-    const materialNames = {
-
-        matte: "Matte",
-        metal: "Metal",
-        glass: "Glass"
-
-    };
-
-
-    const finishNames = {
-
-        dark: "Dark",
-        light: "Light"
-
-    };
-
-
-    const lightingNames = {
-
-        studio: "Studio",
-        night: "Night",
-        neon: "Neon"
-
-    };
-
-
-    const materialValue =
-        document.getElementById(
-            "materialValue"
-        );
-
     if (materialValue) {
 
         materialValue.textContent =
-            materialNames[
-                config.material
-            ];
+            config.material.toUpperCase();
 
     }
 
-
-    const finishValue =
-        document.getElementById(
-            "finishValue"
-        );
 
     if (finishValue) {
 
         finishValue.textContent =
-            finishNames[
-                config.finish
-            ];
+            config.finish.toUpperCase();
 
     }
 
 
-    const lightingValue =
-        document.getElementById(
-            "lightingValue"
-        );
-
     if (lightingValue) {
 
         lightingValue.textContent =
-            lightingNames[
-                config.lighting
-            ];
+            config.lighting.toUpperCase();
+
+    }
+
+
+    if (configurationName) {
+
+        configurationName.textContent =
+            "AERIS";
 
     }
 
 
     const price =
         299 +
-        materialPrices[
-            config.material
-        ] +
-        colorPrices[
-            config.color
-        ];
+        materialPrices[config.material] +
+        colorPrices[config.color];
 
-
-    const productPrice =
-        document.getElementById(
-            "productPrice"
-        );
 
     if (productPrice) {
 
         productPrice.textContent =
             `€${price}`;
-
-    }
-
-
-    const configurationName =
-        document.getElementById(
-            "configurationName"
-        );
-
-    if (configurationName) {
-
-        configurationName.textContent =
-            `AERIS / ${config.color.toUpperCase()}`;
 
     }
 
@@ -991,39 +883,43 @@ document
     .querySelectorAll(
         ".material-option"
     )
-    .forEach(button => {
+    .forEach(
+        (button) => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                document
-                    .querySelectorAll(
-                        ".material-option"
-                    )
-                    .forEach(item =>
-                        item.classList.remove(
-                            "active"
+                    config.material =
+                        button.dataset.material;
+
+                    document
+                        .querySelectorAll(
+                            ".material-option"
                         )
+                        .forEach(
+                            (item) => {
+
+                                item.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+                    button.classList.add(
+                        "active"
                     );
 
+                    updateMaterial();
 
-                button.classList.add(
-                    "active"
-                );
+                    updateUI();
 
+                }
+            );
 
-                config.material =
-                    button.dataset.material;
-
-
-                updateMaterial();
-                updateUI();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
@@ -1034,39 +930,43 @@ document
     .querySelectorAll(
         ".color-button"
     )
-    .forEach(button => {
+    .forEach(
+        (button) => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                document
-                    .querySelectorAll(
-                        ".color-button"
-                    )
-                    .forEach(item =>
-                        item.classList.remove(
-                            "active"
+                    config.color =
+                        button.dataset.color;
+
+                    document
+                        .querySelectorAll(
+                            ".color-button"
                         )
+                        .forEach(
+                            (item) => {
+
+                                item.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+                    button.classList.add(
+                        "active"
                     );
 
+                    updateColor();
 
-                button.classList.add(
-                    "active"
-                );
+                    updateUI();
 
+                }
+            );
 
-                config.color =
-                    button.dataset.color;
-
-
-                updateColor();
-                updateUI();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
@@ -1077,38 +977,43 @@ document
     .querySelectorAll(
         ".finish-option"
     )
-    .forEach(button => {
+    .forEach(
+        (button) => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                document
-                    .querySelectorAll(
-                        ".finish-option"
-                    )
-                    .forEach(item =>
-                        item.classList.remove(
-                            "active"
+                    config.finish =
+                        button.dataset.finish;
+
+                    document
+                        .querySelectorAll(
+                            ".finish-option"
                         )
+                        .forEach(
+                            (item) => {
+
+                                item.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+                    button.classList.add(
+                        "active"
                     );
 
+                    updateFinish();
 
-                button.classList.add(
-                    "active"
-                );
+                    updateUI();
 
+                }
+            );
 
-                config.finish =
-                    button.dataset.finish;
-
-
-                updateFinish();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
@@ -1119,38 +1024,43 @@ document
     .querySelectorAll(
         ".lighting-option"
     )
-    .forEach(button => {
+    .forEach(
+        (button) => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                document
-                    .querySelectorAll(
-                        ".lighting-option"
-                    )
-                    .forEach(item =>
-                        item.classList.remove(
-                            "active"
+                    config.lighting =
+                        button.dataset.lighting;
+
+                    document
+                        .querySelectorAll(
+                            ".lighting-option"
                         )
+                        .forEach(
+                            (item) => {
+
+                                item.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+                    button.classList.add(
+                        "active"
                     );
 
+                    updateLighting();
 
-                button.classList.add(
-                    "active"
-                );
+                    updateUI();
 
+                }
+            );
 
-                config.lighting =
-                    button.dataset.lighting;
-
-
-                updateLighting();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
@@ -1164,8 +1074,8 @@ const cameraPositions = {
         position:
             new THREE.Vector3(
                 0,
-                1.5,
-                6
+                1.4,
+                5.5
             ),
 
         target:
@@ -1182,7 +1092,7 @@ const cameraPositions = {
 
         position:
             new THREE.Vector3(
-                6,
+                5.2,
                 1.4,
                 0
             ),
@@ -1202,14 +1112,14 @@ const cameraPositions = {
         position:
             new THREE.Vector3(
                 3.4,
-                1.5,
+                1.8,
                 3.4
             ),
 
         target:
             new THREE.Vector3(
-                0.6,
-                0.1,
+                0,
+                0.2,
                 0
             )
 
@@ -1221,8 +1131,8 @@ const cameraPositions = {
         position:
             new THREE.Vector3(
                 0,
-                6,
-                0.1
+                5.5,
+                0.01
             ),
 
         target:
@@ -1237,47 +1147,92 @@ const cameraPositions = {
 };
 
 
+let cameraAnimation = null;
+
+
+function animateCamera(
+    preset
+) {
+
+    const data =
+        cameraPositions[preset];
+
+    if (!data) {
+        return;
+    }
+
+
+    cameraAnimation = {
+
+        startPosition:
+            camera.position.clone(),
+
+        endPosition:
+            data.position.clone(),
+
+        startTarget:
+            controls.target.clone(),
+
+        endTarget:
+            data.target.clone(),
+
+        progress: 0
+
+    };
+
+}
+
+
+/* =========================================================
+   CAMERA BUTTONS
+========================================================= */
+
 document
     .querySelectorAll(
         ".camera-button"
     )
-    .forEach(button => {
+    .forEach(
+        (button) => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                const preset =
-                    cameraPositions[
-                        button.dataset.camera
-                    ];
+                    const cameraName =
+                        button.dataset.camera;
+
+                    animateCamera(
+                        cameraName
+                    );
 
 
-                if (!preset) {
-                    return;
+                    document
+                        .querySelectorAll(
+                            ".camera-button"
+                        )
+                        .forEach(
+                            (item) => {
+
+                                item.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+                    button.classList.add(
+                        "active"
+                    );
+
                 }
+            );
 
-
-                camera.position.copy(
-                    preset.position
-                );
-
-
-                controls.target.copy(
-                    preset.target
-                );
-
-
-                controls.update();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
-   CONFIGURATION BUTTON
+   ADD CONFIGURATION
 ========================================================= */
 
 const addConfiguration =
@@ -1292,36 +1247,30 @@ if (addConfiguration) {
         "click",
         () => {
 
-            const message =
-                document.getElementById(
-                    "configurationMessage"
+            if (
+                configurationMessage
+            ) {
+
+                configurationMessage.textContent =
+                    "CONFIGURATION SAVED";
+
+                configurationMessage.classList.add(
+                    "visible"
                 );
 
 
-            if (!message) {
-                return;
+                setTimeout(
+                    () => {
+
+                        configurationMessage.classList.remove(
+                            "visible"
+                        );
+
+                    },
+                    2200
+                );
+
             }
-
-
-            message.textContent =
-                "CONFIGURATION SAVED";
-
-
-            message.classList.add(
-                "visible"
-            );
-
-
-            setTimeout(
-                () => {
-
-                    message.classList.remove(
-                        "visible"
-                    );
-
-                },
-                2200
-            );
 
         }
     );
@@ -1341,13 +1290,18 @@ window.addEventListener(
             window.innerWidth /
             window.innerHeight;
 
-
         camera.updateProjectionMatrix();
-
 
         renderer.setSize(
             window.innerWidth,
             window.innerHeight
+        );
+
+        renderer.setPixelRatio(
+            Math.min(
+                window.devicePixelRatio,
+                2
+            )
         );
 
     }
@@ -1355,14 +1309,118 @@ window.addEventListener(
 
 
 /* =========================================================
-   ANIMATION
+   CAMERA ANIMATION
 ========================================================= */
 
-const clock =
-    new THREE.Clock();
+function updateCameraAnimation() {
 
+    if (!cameraAnimation) {
+        return;
+    }
+
+
+    cameraAnimation.progress +=
+        0.035;
+
+
+    const t =
+        Math.min(
+            cameraAnimation.progress,
+            1
+        );
+
+
+    const eased =
+        1 -
+        Math.pow(
+            1 - t,
+            3
+        );
+
+
+    camera.position.lerpVectors(
+        cameraAnimation.startPosition,
+        cameraAnimation.endPosition,
+        eased
+    );
+
+
+    controls.target.lerpVectors(
+        cameraAnimation.startTarget,
+        cameraAnimation.endTarget,
+        eased
+    );
+
+
+    if (t >= 1) {
+
+        cameraAnimation =
+            null;
+
+    }
+
+}
+
+
+/* =========================================================
+   IDLE MODEL ROTATION
+========================================================= */
+
+let idleRotation = true;
+
+
+canvas.addEventListener(
+    "pointerdown",
+    () => {
+
+        idleRotation = false;
+
+    }
+);
+
+
+canvas.addEventListener(
+    "pointerup",
+    () => {
+
+        setTimeout(
+            () => {
+
+                idleRotation = true;
+
+            },
+            1200
+        );
+
+    }
+);
+
+
+/* =========================================================
+   RENDER LOOP
+========================================================= */
 
 function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    updateCameraAnimation();
+
+
+    if (
+        aerisModel &&
+        idleRotation &&
+        !cameraAnimation
+    ) {
+
+        aerisModel.rotation.y +=
+            0.0015;
+
+    }
+
 
     controls.update();
 
@@ -1372,13 +1430,18 @@ function animate() {
         camera
     );
 
-
-    requestAnimationFrame(
-        animate
-    );
-
 }
 
 
 animate();
-```
+
+
+/* =========================================================
+   INITIAL UI
+========================================================= */
+
+updateUI();
+
+console.log(
+    "ORBIT / AERIS SYSTEM INITIALIZED"
+);
