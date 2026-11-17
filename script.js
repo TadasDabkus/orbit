@@ -79,6 +79,12 @@ const scene =
     new THREE.Scene();
 
 
+/*
+   IMPORTANT:
+   Background is ALWAYS dark.
+   FINISH does NOT change the background.
+*/
+
 scene.background =
     new THREE.Color(
         0x080909
@@ -313,7 +319,7 @@ const materialSettings = {
 
         ior: 1.45,
 
-        opacity: 0.38
+        opacity: 0.55
 
     }
 
@@ -334,6 +340,47 @@ const colorData = {
     orange: 0xff6b22,
 
     lime: 0xc8ff00
+
+};
+
+
+/* =========================================================
+   FINISH SETTINGS
+=========================================================
+
+   FINISH NO LONGER CHANGES THE BACKGROUND.
+
+   DARK:
+   - deeper color
+   - slightly more subdued
+   - slightly higher roughness
+
+   LIGHT:
+   - brighter color
+   - cleaner appearance
+   - slightly lower roughness
+
+========================================================= */
+
+
+const finishSettings = {
+
+    dark: {
+
+        colorMultiplier: 0.78,
+
+        roughnessMultiplier: 1.12
+
+    },
+
+
+    light: {
+
+        colorMultiplier: 1.08,
+
+        roughnessMultiplier: 0.88
+
+    }
 
 };
 
@@ -395,9 +442,7 @@ const originalMaterials =
 
 const configurableMeshes = [];
 
-
 const originalMeshes = [];
-
 
 const darkMeshes = [];
 
@@ -565,7 +610,6 @@ function storeOriginalMaterial(
    Everything that is not configurable
    becomes a slightly lighter dark gray.
 
-   IMPORTANT:
    Original texture maps are preserved.
 
 ========================================================= */
@@ -671,7 +715,7 @@ function applyDarkMaterial(
    CREATE INNER CUSHION COLOR
 =========================================================
 
-   The Inner Cushions will be slightly lighter
+   Inner Cushions are slightly lighter
    than the selected Outer Shell color.
 
 ========================================================= */
@@ -689,6 +733,7 @@ function getInnerCushionColor() {
 
     const hsl = {};
 
+
     color.getHSL(
         hsl
     );
@@ -696,13 +741,6 @@ function getInnerCushionColor() {
 
     /*
        Increase brightness.
-
-       Example:
-
-       Black  → dark gray
-       Orange → lighter orange
-       Lime   → lighter lime
-       White  → almost white
     */
 
     hsl.l =
@@ -837,6 +875,119 @@ function updateInnerCushions() {
 
         }
     );
+
+}
+
+
+/* =========================================================
+   APPLY FINISH TO MATERIAL
+=========================================================
+
+   IMPORTANT:
+
+   Finish changes the selected
+   Outer Shell appearance only.
+
+   It NEVER changes the scene background.
+
+========================================================= */
+
+
+function applyFinishToMaterial(
+    material
+) {
+
+    const finish =
+        finishSettings[
+            config.finish
+        ];
+
+
+    if (!finish) {
+
+        return;
+
+    }
+
+
+    if (
+        material.color
+    ) {
+
+        /*
+           Convert current color to HSL
+           and modify brightness.
+
+           This gives us a much more
+           natural LIGHT / DARK finish.
+        */
+
+        const color =
+            material.color.clone();
+
+
+        const hsl = {};
+
+
+        color.getHSL(
+            hsl
+        );
+
+
+        if (
+            config.finish === "dark"
+        ) {
+
+            hsl.l =
+                Math.max(
+                    hsl.l * finish.colorMultiplier,
+                    0.05
+                );
+
+        }
+
+        else {
+
+            hsl.l =
+                Math.min(
+                    hsl.l * finish.colorMultiplier,
+                    0.98
+                );
+
+        }
+
+
+        color.setHSL(
+            hsl.h,
+            hsl.s,
+            hsl.l
+        );
+
+
+        material.color.copy(
+            color
+        );
+
+    }
+
+
+    if (
+        "roughness" in material
+    ) {
+
+        material.roughness =
+            THREE.MathUtils.clamp(
+
+                material.roughness *
+                finish.roughnessMultiplier,
+
+                0.04,
+
+                1
+
+            );
+
+    }
 
 }
 
@@ -998,6 +1149,7 @@ gltfLoader.load(
            ADD MODEL
         --------------------------------------------- */
 
+
         product.add(
             aerisModel
         );
@@ -1006,6 +1158,7 @@ gltfLoader.load(
         /* ---------------------------------------------
            DARK MATERIAL
         --------------------------------------------- */
+
 
         darkMeshes.forEach(
             object => {
@@ -1022,12 +1175,14 @@ gltfLoader.load(
            FIT MODEL
         --------------------------------------------- */
 
+
         fitModelToScene();
 
 
         /* ---------------------------------------------
            INITIAL CONFIGURATION
         --------------------------------------------- */
+
 
         updateMaterial();
 
@@ -1045,6 +1200,7 @@ gltfLoader.load(
         /* ---------------------------------------------
            HIDE LOADING SCREEN
         --------------------------------------------- */
+
 
         const loader =
             document.querySelector(
@@ -1196,6 +1352,7 @@ function fitModelToScene() {
        CENTER MODEL
     --------------------------------------------- */
 
+
     aerisModel.position.x -=
         center.x;
 
@@ -1211,6 +1368,7 @@ function fitModelToScene() {
     /* ---------------------------------------------
        SCALE MODEL
     --------------------------------------------- */
+
 
     const maxDimension =
         Math.max(
@@ -1244,6 +1402,7 @@ function fitModelToScene() {
        MODEL POSITION
     --------------------------------------------- */
 
+
     aerisModel.position.y =
         0;
 
@@ -1251,6 +1410,7 @@ function fitModelToScene() {
     /* ---------------------------------------------
        CAMERA
     --------------------------------------------- */
+
 
     camera.position.set(
         0,
@@ -1275,8 +1435,8 @@ function fitModelToScene() {
    CREATE CONFIGURED MATERIAL
 =========================================================
 
-   This function is ONLY used by the
-   configurable Outer Shell parts.
+   ONLY configurable Outer Shell parts
+   receive this material.
 
 ========================================================= */
 
@@ -1291,14 +1451,9 @@ function createConfiguredMaterial(
         ];
 
 
-    /*
-       For Glass we create a real
-       MeshPhysicalMaterial.
-
-       This is important because normal
-       MeshStandardMaterial does not give us
-       proper transmission.
-    */
+    /* =====================================================
+       GLASS
+    ===================================================== */
 
     if (
         config.material === "glass"
@@ -1334,10 +1489,6 @@ function createConfiguredMaterial(
 
                 emissiveMap:
                     originalMaterial.emissiveMap ||
-                    null,
-
-                bumpMap:
-                    originalMaterial.bumpMap ||
                     null,
 
                 displacementMap:
@@ -1401,17 +1552,26 @@ function createConfiguredMaterial(
         }
 
 
+        /*
+           Finish still affects
+           glass appearance slightly,
+           but NOT the background.
+        */
+
+        applyFinishToMaterial(
+            material
+        );
+
+
         return material;
 
     }
 
 
-    /*
+    /* =====================================================
        MATTE / METAL
+    ===================================================== */
 
-       Clone original material so
-       textures remain intact.
-    */
 
     const material =
         originalMaterial.clone();
@@ -1474,8 +1634,7 @@ function createConfiguredMaterial(
 
 
     /*
-       Only configurable parts
-       receive selected color.
+       Apply selected color
     */
 
     if (
@@ -1489,6 +1648,16 @@ function createConfiguredMaterial(
         );
 
     }
+
+
+    /*
+       Apply DARK / LIGHT finish
+       to the shell only.
+    */
+
+    applyFinishToMaterial(
+        material
+    );
 
 
     return material;
@@ -1579,53 +1748,13 @@ function updateMaterial() {
 
 function updateColor() {
 
-    const color =
-        colorData[
-            config.color
-        ];
+    /*
+       Rebuild configurable materials
+       so finish + material + color
+       are always applied together.
+    */
 
-
-    configurableMeshes.forEach(
-        mesh => {
-
-            if (
-                Array.isArray(
-                    mesh.material
-                )
-            ) {
-
-                mesh.material.forEach(
-                    material => {
-
-                        if (
-                            material &&
-                            material.color
-                        ) {
-
-                            material.color.set(
-                                color
-                            );
-
-                        }
-
-                    }
-                );
-
-            }
-
-            else if (
-                mesh.material &&
-                mesh.material.color
-            ) {
-
-                mesh.material.color.set(
-                    color
-                );
-
-            }
-
-        }
-    );
+    updateMaterial();
 
 
     /*
@@ -1640,33 +1769,41 @@ function updateColor() {
 
 /* =========================================================
    UPDATE FINISH
+=========================================================
+
+   IMPORTANT:
+
+   Background stays dark.
+
+   DARK / LIGHT now changes
+   the product surface itself.
+
 ========================================================= */
 
 
 function updateFinish() {
 
-    if (
-        config.finish === "dark"
-    ) {
+    /*
+       Rebuild the configurable materials.
 
-        scene.background =
-            new THREE.Color(
-                0x080909
-            );
+       This applies:
 
-    }
+       - selected material
+       - selected color
+       - selected finish
+
+       WITHOUT touching scene.background.
+    */
+
+    updateMaterial();
 
 
-    if (
-        config.finish === "light"
-    ) {
+    /*
+       Keep Inner Cushions
+       slightly lighter than shell.
+    */
 
-        scene.background =
-            new THREE.Color(
-                0xe9ebe8
-            );
-
-    }
+    updateInnerCushions();
 
 }
 
@@ -1857,6 +1994,7 @@ function updateUI() {
        PRICE
     --------------------------------------------- */
 
+
     const price =
         299 +
         materialPrices[
@@ -1886,6 +2024,7 @@ function updateUI() {
     /* ---------------------------------------------
        CONFIGURATION NAME
     --------------------------------------------- */
+
 
     const configurationName =
         document.getElementById(
@@ -2040,6 +2179,8 @@ document
 
                     updateFinish();
 
+                    updateUI();
+
                 }
             );
 
@@ -2085,6 +2226,8 @@ document
 
 
                     updateLighting();
+
+                    updateUI();
 
                 }
             );
