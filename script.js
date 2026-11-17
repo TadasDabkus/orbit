@@ -483,44 +483,31 @@ gltfLoader.load(
 
     (progress) => {
 
-        if (
-            progress.total
-        ) {
+    if (progress.total) {
 
-            const percent =
-                Math.round(
-                    (
-                        progress.loaded /
-                        progress.total
-                    ) * 100
-                );
+        const percent =
+            Math.round(
+                (
+                    progress.loaded /
+                    progress.total
+                ) * 100
+            );
 
-            const loadingProgress =
-                document.getElementById(
-                    "loadingProgress"
-                );
+        const loadingProgress =
+            document.getElementById(
+                "loadingProgress"
+            );
 
-            if (loadingProgress) {
+        if (loadingProgress) {
 
-                loadingProgress.textContent =
-                    `${percent}%`;
-
-            }
+            loadingProgress.textContent =
+                percent + "%";
 
         }
 
-    },
-
-    (error) => {
-
-        console.error(
-            "AERIS GLB LOAD ERROR:",
-            error
-        );
-
     }
 
-);
+},
 
 
 /* =========================================================
