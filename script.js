@@ -181,12 +181,14 @@ const materialSettings = {
 
     matte: {
         roughness: 0.48,
-        metalness: 0.05
+        metalness: 0.05,
+        transmission: 0
     },
 
     metal: {
         roughness: 0.20,
-        metalness: 0.90
+        metalness: 0.90,
+        transmission: 0
     },
 
     glass: {
@@ -266,17 +268,20 @@ const originalMaterials = new Map();
 
 const configurableMeshes = [];
 
-const fixedMeshes = [];
+const originalMeshes = [];
+
+const darkMeshes = [];
 
 
 /* =========================================================
-   OBJECT CLASSIFICATION
-========================================================= */
+   CONFIGURABLE PARTS
+=========================================================
 
-/*
-    These are the parts whose appearance can change
-    when the user changes material/color.
-*/
+   ONLY THESE PARTS CHANGE WITH:
+   - MATERIAL
+   - COLOR
+
+========================================================= */
 
 function isConfigurablePart(object) {
 
@@ -286,47 +291,32 @@ function isConfigurablePart(object) {
 
     const name = object.name.toLowerCase();
 
-    const keywords = [
+    const configurableNames = [
 
-        "headcoushin",
-        "headcushin",
+        "aeris_outershell_l",
 
-        "headcoushincase",
-        "headcushincase",
+        "aeris_outershell_r",
 
-        "outershell",
+        "aeris_headcoushinoutershellconnectortoshellholder",
 
-        "innershell",
-
-        "shellholder",
-
-        "shellholderpanels",
-
-        "innerpart",
-        "innerparts",
-
-        "usbaux_case",
-
-        "usbaux",
-
-        "volumeslider",
-
-        "cushion_l",
-        "cushion_r"
+        "aeris_headcushincase"
 
     ];
 
-    return keywords.some(
-        keyword => name.includes(keyword)
-    );
+    return configurableNames.includes(name);
 }
 
 
-/*
-    These are intentionally kept unchanged.
-*/
+/* =========================================================
+   ORIGINAL PARTS
+=========================================================
 
-function isFixedPart(object) {
+   THESE KEEP THEIR ORIGINAL BLENDER MATERIALS
+   AND TEXTURES.
+
+========================================================= */
+
+function isOriginalPart(object) {
 
     if (!object.isMesh) {
         return false;
@@ -343,9 +333,8 @@ function isFixedPart(object) {
         "hinge",
 
         "innercoushin",
-        "innercushin",
 
-        "logo"
+        "innercushin"
 
     ];
 
@@ -382,6 +371,83 @@ function storeOriginalMaterial(object) {
         );
 
     }
+
+}
+
+
+/* =========================================================
+   CREATE DARK MATERIAL
+=========================================================
+
+   All other parts become dark gray / black.
+
+   Their original texture maps are preserved,
+   but the base color is darkened.
+
+========================================================= */
+
+function createDarkMaterial(originalMaterial) {
+
+    const material = originalMaterial.clone();
+
+    if (material.color) {
+
+        material.color.set(
+            0x181b1d
+        );
+
+    }
+
+    if (
+        "roughness" in material
+    ) {
+
+        material.roughness = 0.48;
+
+    }
+
+    if (
+        "metalness" in material
+    ) {
+
+        material.metalness = 0.15;
+
+    }
+
+    return material;
+}
+
+
+/* =========================================================
+   APPLY DARK MATERIAL TO OTHER PARTS
+========================================================= */
+
+function applyDarkMaterial(object) {
+
+    const original =
+        originalMaterials.get(
+            object.uuid
+        );
+
+    if (!original) {
+        return;
+    }
+
+    if (Array.isArray(original)) {
+
+        object.material =
+            original.map(
+                material =>
+                    createDarkMaterial(material)
+            );
+
+    } else {
+
+        object.material =
+            createDarkMaterial(original);
+
+    }
+
 }
 
 
@@ -393,10 +459,6 @@ gltfLoader.load(
 
     "./AERIS_v01.glb",
 
-    /* =====================================================
-       SUCCESS
-    ===================================================== */
-
     (gltf) => {
 
         console.log("AERIS GLB LOADED");
@@ -405,7 +467,7 @@ gltfLoader.load(
 
 
         /* ---------------------------------------------
-           STORE MATERIALS + CLASSIFY OBJECTS
+           CLASSIFY MODEL PARTS
         --------------------------------------------- */
 
         aerisModel.traverse(object => {
@@ -415,11 +477,15 @@ gltfLoader.load(
             }
 
 
+            /* -----------------------------------------
+               STORE ORIGINAL MATERIAL
+            ----------------------------------------- */
+
             storeOriginalMaterial(object);
 
 
             /* -----------------------------------------
-               MODEL SHADOWS
+               SHADOWS
             ----------------------------------------- */
 
             object.castShadow = true;
@@ -427,12 +493,19 @@ gltfLoader.load(
 
 
             /* -----------------------------------------
-               FIXED PARTS
+               CONFIGURABLE PART
             ----------------------------------------- */
 
-            if (isFixedPart(object)) {
+            if (
+                isConfigurablePart(object)
+            ) {
 
-                fixedMeshes.push(object);
+                configurableMeshes.push(object);
+
+                console.log(
+                    "CONFIGURABLE:",
+                    object.name
+                );
 
                 return;
 
@@ -440,18 +513,35 @@ gltfLoader.load(
 
 
             /* -----------------------------------------
-               CONFIGURABLE PARTS
+               ORIGINAL MATERIAL PART
             ----------------------------------------- */
 
-            if (isConfigurablePart(object)) {
+            if (
+                isOriginalPart(object)
+            ) {
 
-                configurableMeshes.push(object);
+                originalMeshes.push(object);
 
-            } else {
+                console.log(
+                    "ORIGINAL:",
+                    object.name
+                );
 
-                fixedMeshes.push(object);
+                return;
 
             }
+
+
+            /* -----------------------------------------
+               EVERYTHING ELSE
+            ----------------------------------------- */
+
+            darkMeshes.push(object);
+
+            console.log(
+                "DARK:",
+                object.name
+            );
 
         });
 
@@ -461,10 +551,14 @@ gltfLoader.load(
             configurableMeshes.length
         );
 
+        console.log(
+            "Original meshes:",
+            originalMeshes.length
+        );
 
         console.log(
-            "Fixed meshes:",
-            fixedMeshes.length
+            "Dark meshes:",
+            darkMeshes.length
         );
 
 
@@ -472,7 +566,23 @@ gltfLoader.load(
            ADD MODEL
         --------------------------------------------- */
 
-        product.add(aerisModel);
+        product.add(
+            aerisModel
+        );
+
+
+        /* ---------------------------------------------
+           APPLY DARK MATERIAL
+           TO ALL OTHER PARTS
+        --------------------------------------------- */
+
+        darkMeshes.forEach(
+            object => {
+
+                applyDarkMaterial(object);
+
+            }
+        );
 
 
         /* ---------------------------------------------
@@ -509,17 +619,18 @@ gltfLoader.load(
         if (loader) {
 
             loader.style.opacity = "0";
-
             loader.style.pointerEvents = "none";
 
-            setTimeout(() => {
+            setTimeout(
+                () => {
 
-                loader.style.display = "none";
+                    loader.style.display = "none";
 
-            }, 500);
+                },
+                500
+            );
 
         }
-
 
         console.log("AERIS READY");
 
@@ -532,7 +643,9 @@ gltfLoader.load(
 
     (progress) => {
 
-        if (progress.total) {
+        if (
+            progress.total
+        ) {
 
             const percent =
                 Math.round(
@@ -542,12 +655,10 @@ gltfLoader.load(
                     ) * 100
                 );
 
-
             const loadingProgress =
                 document.getElementById(
                     "loadingProgress"
                 );
-
 
             if (loadingProgress) {
 
@@ -572,12 +683,10 @@ gltfLoader.load(
             error
         );
 
-
         const loadingProgress =
             document.getElementById(
                 "loadingProgress"
             );
-
 
         if (loadingProgress) {
 
@@ -625,11 +734,14 @@ function fitModelToScene() {
        CENTER MODEL
     --------------------------------------------- */
 
-    aerisModel.position.x -= center.x;
+    aerisModel.position.x -=
+        center.x;
 
-    aerisModel.position.y -= center.y;
+    aerisModel.position.y -=
+        center.y;
 
-    aerisModel.position.z -= center.z;
+    aerisModel.position.z -=
+        center.z;
 
 
     /* ---------------------------------------------
@@ -647,7 +759,9 @@ function fitModelToScene() {
     const targetSize = 3.6;
 
 
-    if (maxDimension > 0) {
+    if (
+        maxDimension > 0
+    ) {
 
         const scale =
             targetSize /
@@ -709,24 +823,11 @@ function createConfiguredMaterial(
 
     if (settings) {
 
-        if (
-            "roughness" in material
-        ) {
+        material.roughness =
+            settings.roughness;
 
-            material.roughness =
-                settings.roughness;
-
-        }
-
-
-        if (
-            "metalness" in material
-        ) {
-
-            material.metalness =
-                settings.metalness;
-
-        }
+        material.metalness =
+            settings.metalness;
 
 
         if (
@@ -734,7 +835,7 @@ function createConfiguredMaterial(
         ) {
 
             material.transmission =
-                settings.transmission || 0;
+                settings.transmission;
 
         }
 
@@ -744,12 +845,16 @@ function createConfiguredMaterial(
         ) {
 
             material.thickness =
-                settings.thickness || 0;
+                settings.thickness;
 
         }
 
     }
 
+
+    /* ---------------------------------------------
+       ONLY CONFIGURABLE PARTS GET COLOR
+    --------------------------------------------- */
 
     if (material.color) {
 
@@ -769,6 +874,14 @@ function createConfiguredMaterial(
 
 /* =========================================================
    UPDATE MATERIAL
+=========================================================
+
+   ONLY:
+   - OuterShell L
+   - OuterShell R
+   - Connector
+   - HeadCushinCase
+
 ========================================================= */
 
 function updateMaterial() {
@@ -781,16 +894,13 @@ function updateMaterial() {
                     mesh.uuid
                 );
 
-
             if (!original) {
                 return;
             }
 
 
             if (
-                Array.isArray(
-                    original
-                )
+                Array.isArray(original)
             ) {
 
                 mesh.material =
@@ -818,6 +928,10 @@ function updateMaterial() {
 
 /* =========================================================
    UPDATE COLOR
+=========================================================
+
+   ONLY CONFIGURABLE PARTS CHANGE COLOR.
+
 ========================================================= */
 
 function updateColor() {
@@ -1010,7 +1124,6 @@ function updateUI() {
             "materialValue"
         );
 
-
     if (materialValue) {
 
         materialValue.textContent =
@@ -1025,7 +1138,6 @@ function updateUI() {
         document.getElementById(
             "finishValue"
         );
-
 
     if (finishValue) {
 
@@ -1042,7 +1154,6 @@ function updateUI() {
             "lightingValue"
         );
 
-
     if (lightingValue) {
 
         lightingValue.textContent =
@@ -1052,6 +1163,10 @@ function updateUI() {
 
     }
 
+
+    /* ---------------------------------------------
+       PRICE
+    --------------------------------------------- */
 
     const price =
         299 +
@@ -1068,7 +1183,6 @@ function updateUI() {
             "productPrice"
         );
 
-
     if (productPrice) {
 
         productPrice.textContent =
@@ -1077,11 +1191,14 @@ function updateUI() {
     }
 
 
+    /* ---------------------------------------------
+       CONFIGURATION NAME
+    --------------------------------------------- */
+
     const configurationName =
         document.getElementById(
             "configurationName"
         );
-
 
     if (configurationName) {
 
@@ -1349,10 +1466,6 @@ const cameraPositions = {
 };
 
 
-/* =========================================================
-   CAMERA BUTTONS
-========================================================= */
-
 document
     .querySelectorAll(
         ".camera-button"
@@ -1456,7 +1569,6 @@ window.addEventListener(
         camera.aspect =
             window.innerWidth /
             window.innerHeight;
-
 
         camera.updateProjectionMatrix();
 
