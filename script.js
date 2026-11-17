@@ -14,6 +14,8 @@ const renderer = new THREE.WebGPURenderer({
 
 await renderer.init();
 
+console.log("ORBIT SCRIPT RUNNING");
+
 renderer.setPixelRatio(
     Math.min(window.devicePixelRatio, 2)
 );
