@@ -943,53 +943,32 @@ updateUI();
 ========================================================= */
 
 const loadingProgress =
-    document.getElementById(
-        "loadingProgress"
-    );
+    document.getElementById("loadingProgress");
+
+const loader =
+    document.querySelector(".loading-screen");
 
 let progress = 0;
 
-const loadingInterval =
-    setInterval(() => {
+const loadingInterval = setInterval(() => {
 
-        progress += 4;
+    progress += 5;
 
-        if (progress >= 100) {
+    if (loadingProgress) {
+        loadingProgress.textContent = `${progress}%`;
+    }
 
-            progress = 100;
+    if (progress >= 100) {
 
-            clearInterval(
-                loadingInterval
-            );
+        clearInterval(loadingInterval);
 
-            setTimeout(() => {
-
-                const loader =
-                    document.querySelector(
-                        ".loading-screen"
-                    );
-
-                if (loader) {
-
-                    loader.classList.add(
-                        "loaded"
-                    );
-
-                }
-
-            }, 350);
-
+        if (loader) {
+            loader.classList.add("loaded");
         }
 
-        if (loadingProgress) {
+    }
 
-            loadingProgress.textContent =
-                `${progress}%`;
-
-        }
-
-    }, 35);
-
+}, 50);
 
 /* =========================================================
    ANIMATION
