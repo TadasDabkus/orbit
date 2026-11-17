@@ -6,10 +6,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
    ORBIT — AERIS PRODUCT CONFIGURATOR
 ========================================================= */
 
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-
-
 const container = document.getElementById("productCanvas");
 
 
