@@ -496,23 +496,18 @@ gltfLoader.load(
            HIDE LOADING SCREEN
         --------------------------------------------- */
 
-        const loader =
-            document.querySelector(
-                ".loading-screen"
-            );
+        const loader = document.querySelector(".loading-screen");
 
-        if (loader) {
+if (loader) {
+    loader.style.opacity = "0";
+    loader.style.pointerEvents = "none";
 
-            loader.classList.add(
-                "loaded"
-            );
+    setTimeout(() => {
+        loader.style.display = "none";
+    }, 500);
+}
 
-        }
-
-
-        console.log("AERIS READY");
-
-    },
+console.log("AERIS READY");
 
 
     /* =====================================================
