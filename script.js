@@ -7,10 +7,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
    ORBIT — AERIS PRODUCT CONFIGURATOR
 ========================================================= */
 
-const container = document.getElementById("productCanvas");
+
+const container =
+    document.getElementById("productCanvas");
+
 
 if (!container) {
-    throw new Error("ORBIT ERROR: #productCanvas was not found.");
+
+    throw new Error(
+        "ORBIT ERROR: #productCanvas was not found."
+    );
+
 }
 
 
@@ -18,49 +25,85 @@ if (!container) {
    RENDERER
 ========================================================= */
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: false
-});
+
+const renderer =
+    new THREE.WebGLRenderer({
+
+        antialias: true,
+        alpha: false
+
+    });
+
 
 renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio, 2)
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
 );
+
 
 renderer.setSize(
     window.innerWidth,
     window.innerHeight
 );
 
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
+
 
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-container.appendChild(renderer.domElement);
 
-console.log("ORBIT RENDERER READY");
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
+
+container.appendChild(
+    renderer.domElement
+);
+
+
+console.log(
+    "ORBIT RENDERER READY"
+);
 
 
 /* =========================================================
    SCENE
 ========================================================= */
 
-const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x080909);
+const scene =
+    new THREE.Scene();
+
+
+scene.background =
+    new THREE.Color(
+        0x080909
+    );
 
 
 /* =========================================================
    CAMERA
 ========================================================= */
 
-const camera = new THREE.PerspectiveCamera(
-    42,
-    window.innerWidth / window.innerHeight,
-    0.01,
-    100
-);
+
+const camera =
+    new THREE.PerspectiveCamera(
+
+        42,
+
+        window.innerWidth /
+        window.innerHeight,
+
+        0.01,
+
+        100
+
+    );
+
 
 camera.position.set(
     0,
@@ -73,25 +116,45 @@ camera.position.set(
    CONTROLS
 ========================================================= */
 
-const controls = new OrbitControls(
-    camera,
-    renderer.domElement
-);
+
+const controls =
+    new OrbitControls(
+
+        camera,
+        renderer.domElement
+
+    );
+
 
 controls.enableDamping = true;
-controls.dampingFactor = 0.06;
 
-controls.minDistance = 2.8;
-controls.maxDistance = 10;
 
-controls.minPolarAngle = 0.35;
-controls.maxPolarAngle = 2.75;
+controls.dampingFactor =
+    0.06;
+
+
+controls.minDistance =
+    2.8;
+
+
+controls.maxDistance =
+    10;
+
+
+controls.minPolarAngle =
+    0.35;
+
+
+controls.maxPolarAngle =
+    2.75;
+
 
 controls.target.set(
     0,
     0,
     0
 );
+
 
 controls.update();
 
@@ -100,18 +163,25 @@ controls.update();
    LIGHTING
 ========================================================= */
 
-const ambientLight = new THREE.AmbientLight(
-    0xffffff,
-    1.5
+
+const ambientLight =
+    new THREE.AmbientLight(
+        0xffffff,
+        1.5
+    );
+
+
+scene.add(
+    ambientLight
 );
 
-scene.add(ambientLight);
 
+const keyLight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        4
+    );
 
-const keyLight = new THREE.DirectionalLight(
-    0xffffff,
-    4
-);
 
 keyLight.position.set(
     4,
@@ -119,15 +189,21 @@ keyLight.position.set(
     5
 );
 
+
 keyLight.castShadow = true;
 
-scene.add(keyLight);
 
-
-const fillLight = new THREE.DirectionalLight(
-    0x9bbcff,
-    2
+scene.add(
+    keyLight
 );
+
+
+const fillLight =
+    new THREE.DirectionalLight(
+        0x9bbcff,
+        2
+    );
+
 
 fillLight.position.set(
     -5,
@@ -135,13 +211,18 @@ fillLight.position.set(
     3
 );
 
-scene.add(fillLight);
 
-
-const rimLight = new THREE.DirectionalLight(
-    0xc8ff00,
-    3
+scene.add(
+    fillLight
 );
+
+
+const rimLight =
+    new THREE.DirectionalLight(
+        0xc8ff00,
+        3
+    );
+
 
 rimLight.position.set(
     0,
@@ -149,27 +230,41 @@ rimLight.position.set(
     -6
 );
 
-scene.add(rimLight);
+
+scene.add(
+    rimLight
+);
 
 
 /* =========================================================
    AERIS PRODUCT
 ========================================================= */
 
-const product = new THREE.Group();
 
-scene.add(product);
+const product =
+    new THREE.Group();
+
+
+scene.add(
+    product
+);
 
 
 /* =========================================================
    CONFIGURATION
 ========================================================= */
 
+
 const config = {
+
     material: "matte",
+
     color: "black",
+
     finish: "dark",
+
     lighting: "studio"
+
 };
 
 
@@ -177,25 +272,49 @@ const config = {
    MATERIAL SETTINGS
 ========================================================= */
 
+
 const materialSettings = {
 
     matte: {
+
         roughness: 0.48,
+
         metalness: 0.05,
-        transmission: 0
+
+        transmission: 0,
+
+        opacity: 1
+
     },
+
 
     metal: {
+
         roughness: 0.20,
+
         metalness: 0.90,
-        transmission: 0
+
+        transmission: 0,
+
+        opacity: 1
+
     },
 
+
     glass: {
-        roughness: 0.08,
-        metalness: 0.10,
-        transmission: 0.35,
-        thickness: 0.6
+
+        roughness: 0.06,
+
+        metalness: 0.00,
+
+        transmission: 0.92,
+
+        thickness: 0.25,
+
+        ior: 1.45,
+
+        opacity: 0.38
+
     }
 
 };
@@ -204,6 +323,7 @@ const materialSettings = {
 /* =========================================================
    COLOR SETTINGS
 ========================================================= */
+
 
 const colorData = {
 
@@ -221,6 +341,7 @@ const colorData = {
 /* =========================================================
    PRICES
 ========================================================= */
+
 
 const materialPrices = {
 
@@ -250,7 +371,10 @@ const colorPrices = {
    GLTF
 ========================================================= */
 
-const gltfLoader = new GLTFLoader();
+
+const gltfLoader =
+    new GLTFLoader();
+
 
 let aerisModel = null;
 
@@ -259,16 +383,21 @@ let aerisModel = null;
    ORIGINAL MATERIAL STORAGE
 ========================================================= */
 
-const originalMaterials = new Map();
+
+const originalMaterials =
+    new Map();
 
 
 /* =========================================================
    MESH GROUPS
 ========================================================= */
 
+
 const configurableMeshes = [];
 
+
 const originalMeshes = [];
+
 
 const darkMeshes = [];
 
@@ -277,19 +406,30 @@ const darkMeshes = [];
    CONFIGURABLE PARTS
 =========================================================
 
-   ONLY THESE PARTS CHANGE WITH:
-   - MATERIAL
-   - COLOR
+   ONLY THESE PARTS CHANGE:
+
+   - AERIS_OuterShell_L
+   - AERIS_OuterShell_R
+   - AERIS_HeadCoushinOuterShellConnectorToShellHolder
+   - AERIS_HeadCushinCase
 
 ========================================================= */
 
-function isConfigurablePart(object) {
+
+function isConfigurablePart(
+    object
+) {
 
     if (!object.isMesh) {
+
         return false;
+
     }
 
-    const name = object.name.toLowerCase();
+
+    const name =
+        object.name.toLowerCase();
+
 
     const configurableNames = [
 
@@ -303,7 +443,11 @@ function isConfigurablePart(object) {
 
     ];
 
-    return configurableNames.includes(name);
+
+    return configurableNames.includes(
+        name
+    );
+
 }
 
 
@@ -311,36 +455,53 @@ function isConfigurablePart(object) {
    ORIGINAL PARTS
 =========================================================
 
-   THESE KEEP THEIR ORIGINAL BLENDER MATERIALS
-   AND TEXTURES.
+   THESE KEEP THEIR ORIGINAL MATERIAL / TEXTURE:
+
+   - Inner Cushions
+   - Screws
+   - Hinges
+   - Wires
 
 ========================================================= */
 
-function isOriginalPart(object) {
+
+function isOriginalPart(
+    object
+) {
 
     if (!object.isMesh) {
+
         return false;
+
     }
 
-    const name = object.name.toLowerCase();
+
+    const name =
+        object.name.toLowerCase();
+
 
     const keywords = [
+
+        "aeris_innercushions",
+
+        "innercushions",
+
+        "innercushin",
 
         "wire",
 
         "screw",
 
-        "hinge",
-
-        "innercoushin",
-
-        "innercushin"
+        "hinge"
 
     ];
 
+
     return keywords.some(
-        keyword => name.includes(keyword)
+        keyword =>
+            name.includes(keyword)
     );
+
 }
 
 
@@ -348,26 +509,48 @@ function isOriginalPart(object) {
    STORE ORIGINAL MATERIAL
 ========================================================= */
 
-function storeOriginalMaterial(object) {
 
-    if (!object.isMesh || !object.material) {
+function storeOriginalMaterial(
+    object
+) {
+
+    if (
+        !object.isMesh ||
+        !object.material
+    ) {
+
         return;
+
     }
 
-    if (Array.isArray(object.material)) {
+
+    if (
+        Array.isArray(
+            object.material
+        )
+    ) {
 
         originalMaterials.set(
+
             object.uuid,
+
             object.material.map(
-                material => material.clone()
+                material =>
+                    material.clone()
             )
+
         );
 
-    } else {
+    }
+
+    else {
 
         originalMaterials.set(
+
             object.uuid,
+
             object.material.clone()
+
         );
 
     }
@@ -379,74 +562,281 @@ function storeOriginalMaterial(object) {
    CREATE DARK MATERIAL
 =========================================================
 
-   All other parts become dark gray / black.
+   Everything that is not configurable
+   becomes a slightly lighter dark gray.
 
-   Their original texture maps are preserved,
-   but the base color is darkened.
+   IMPORTANT:
+   Original texture maps are preserved.
 
 ========================================================= */
 
-function createDarkMaterial(originalMaterial) {
 
-    const material = originalMaterial.clone();
+function createDarkMaterial(
+    originalMaterial
+) {
+
+    const material =
+        originalMaterial.clone();
+
 
     if (material.color) {
 
         material.color.set(
-            0x181b1d
+            0x292c2f
         );
 
     }
+
 
     if (
         "roughness" in material
     ) {
 
-        material.roughness = 0.48;
+        material.roughness =
+            Math.max(
+                material.roughness,
+                0.42
+            );
 
     }
+
 
     if (
         "metalness" in material
     ) {
 
-        material.metalness = 0.15;
+        material.metalness =
+            Math.min(
+                material.metalness,
+                0.18
+            );
 
     }
 
+
     return material;
+
 }
 
 
 /* =========================================================
-   APPLY DARK MATERIAL TO OTHER PARTS
+   APPLY DARK MATERIAL
 ========================================================= */
 
-function applyDarkMaterial(object) {
+
+function applyDarkMaterial(
+    object
+) {
 
     const original =
         originalMaterials.get(
             object.uuid
         );
 
+
     if (!original) {
+
         return;
+
     }
 
-    if (Array.isArray(original)) {
+
+    if (
+        Array.isArray(original)
+    ) {
 
         object.material =
             original.map(
                 material =>
-                    createDarkMaterial(material)
+                    createDarkMaterial(
+                        material
+                    )
             );
 
-    } else {
+    }
+
+    else {
 
         object.material =
-            createDarkMaterial(original);
+            createDarkMaterial(
+                original
+            );
 
     }
+
+}
+
+
+/* =========================================================
+   CREATE INNER CUSHION COLOR
+=========================================================
+
+   The Inner Cushions will be slightly lighter
+   than the selected Outer Shell color.
+
+========================================================= */
+
+
+function getInnerCushionColor() {
+
+    const color =
+        new THREE.Color(
+            colorData[
+                config.color
+            ]
+        );
+
+
+    const hsl = {};
+
+    color.getHSL(
+        hsl
+    );
+
+
+    /*
+       Increase brightness.
+
+       Example:
+
+       Black  → dark gray
+       Orange → lighter orange
+       Lime   → lighter lime
+       White  → almost white
+    */
+
+    hsl.l =
+        Math.min(
+            hsl.l + 0.16,
+            0.92
+        );
+
+
+    /*
+       Slightly reduce saturation
+       so the cushion feels softer.
+    */
+
+    hsl.s =
+        Math.max(
+            hsl.s - 0.04,
+            0
+        );
+
+
+    color.setHSL(
+        hsl.h,
+        hsl.s,
+        hsl.l
+    );
+
+
+    return color;
+
+}
+
+
+/* =========================================================
+   APPLY INNER CUSHION COLOR
+========================================================= */
+
+
+function updateInnerCushions() {
+
+    const cushionColor =
+        getInnerCushionColor();
+
+
+    originalMeshes.forEach(
+        mesh => {
+
+            const name =
+                mesh.name.toLowerCase();
+
+
+            if (
+                !name.includes(
+                    "innercushions"
+                ) &&
+                !name.includes(
+                    "innercushin"
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const original =
+                originalMaterials.get(
+                    mesh.uuid
+                );
+
+
+            if (!original) {
+
+                return;
+
+            }
+
+
+            if (
+                Array.isArray(
+                    original
+                )
+            ) {
+
+                mesh.material =
+                    original.map(
+                        material => {
+
+                            const cloned =
+                                material.clone();
+
+
+                            if (
+                                cloned.color
+                            ) {
+
+                                cloned.color.copy(
+                                    cushionColor
+                                );
+
+                            }
+
+
+                            return cloned;
+
+                        }
+                    );
+
+            }
+
+            else {
+
+                const cloned =
+                    original.clone();
+
+
+                if (
+                    cloned.color
+                ) {
+
+                    cloned.color.copy(
+                        cushionColor
+                    );
+
+                }
+
+
+                mesh.material =
+                    cloned;
+
+            }
+
+        }
+    );
 
 }
 
@@ -455,95 +845,135 @@ function applyDarkMaterial(object) {
    LOAD AERIS GLB
 ========================================================= */
 
+
 gltfLoader.load(
 
     "./AERIS_v01.glb",
 
+
     (gltf) => {
 
-        console.log("AERIS GLB LOADED");
+        console.log(
+            "AERIS GLB LOADED"
+        );
 
-        aerisModel = gltf.scene;
+
+        aerisModel =
+            gltf.scene;
 
 
         /* ---------------------------------------------
            CLASSIFY MODEL PARTS
         --------------------------------------------- */
 
-        aerisModel.traverse(object => {
 
-            if (!object.isMesh) {
-                return;
-            }
+        aerisModel.traverse(
+            object => {
 
+                if (
+                    !object.isMesh
+                ) {
 
-            /* -----------------------------------------
-               STORE ORIGINAL MATERIAL
-            ----------------------------------------- */
+                    return;
 
-            storeOriginalMaterial(object);
-
-
-            /* -----------------------------------------
-               SHADOWS
-            ----------------------------------------- */
-
-            object.castShadow = true;
-            object.receiveShadow = true;
+                }
 
 
-            /* -----------------------------------------
-               CONFIGURABLE PART
-            ----------------------------------------- */
+                /*
+                   Store original Blender material
+                   before changing anything.
+                */
 
-            if (
-                isConfigurablePart(object)
-            ) {
+                storeOriginalMaterial(
+                    object
+                );
 
-                configurableMeshes.push(object);
+
+                /*
+                   Shadows
+                */
+
+                object.castShadow =
+                    true;
+
+
+                object.receiveShadow =
+                    true;
+
+
+                /*
+                   CONFIGURABLE
+                */
+
+                if (
+                    isConfigurablePart(
+                        object
+                    )
+                ) {
+
+                    configurableMeshes.push(
+                        object
+                    );
+
+
+                    console.log(
+                        "CONFIGURABLE:",
+                        object.name
+                    );
+
+
+                    return;
+
+                }
+
+
+                /*
+                   ORIGINAL PARTS
+
+                   Inner Cushions
+                   Screws
+                   Hinges
+                   Wires
+                */
+
+                if (
+                    isOriginalPart(
+                        object
+                    )
+                ) {
+
+                    originalMeshes.push(
+                        object
+                    );
+
+
+                    console.log(
+                        "ORIGINAL:",
+                        object.name
+                    );
+
+
+                    return;
+
+                }
+
+
+                /*
+                   EVERYTHING ELSE
+                */
+
+                darkMeshes.push(
+                    object
+                );
+
 
                 console.log(
-                    "CONFIGURABLE:",
+                    "DARK:",
                     object.name
                 );
 
-                return;
-
             }
-
-
-            /* -----------------------------------------
-               ORIGINAL MATERIAL PART
-            ----------------------------------------- */
-
-            if (
-                isOriginalPart(object)
-            ) {
-
-                originalMeshes.push(object);
-
-                console.log(
-                    "ORIGINAL:",
-                    object.name
-                );
-
-                return;
-
-            }
-
-
-            /* -----------------------------------------
-               EVERYTHING ELSE
-            ----------------------------------------- */
-
-            darkMeshes.push(object);
-
-            console.log(
-                "DARK:",
-                object.name
-            );
-
-        });
+        );
 
 
         console.log(
@@ -551,10 +981,12 @@ gltfLoader.load(
             configurableMeshes.length
         );
 
+
         console.log(
             "Original meshes:",
             originalMeshes.length
         );
+
 
         console.log(
             "Dark meshes:",
@@ -572,14 +1004,15 @@ gltfLoader.load(
 
 
         /* ---------------------------------------------
-           APPLY DARK MATERIAL
-           TO ALL OTHER PARTS
+           DARK MATERIAL
         --------------------------------------------- */
 
         darkMeshes.forEach(
             object => {
 
-                applyDarkMaterial(object);
+                applyDarkMaterial(
+                    object
+                );
 
             }
         );
@@ -600,6 +1033,8 @@ gltfLoader.load(
 
         updateColor();
 
+        updateInnerCushions();
+
         updateFinish();
 
         updateLighting();
@@ -616,23 +1051,35 @@ gltfLoader.load(
                 ".loading-screen"
             );
 
+
         if (loader) {
 
-            loader.style.opacity = "0";
-            loader.style.pointerEvents = "none";
+            loader.style.opacity =
+                "0";
+
+
+            loader.style.pointerEvents =
+                "none";
+
 
             setTimeout(
                 () => {
 
-                    loader.style.display = "none";
+                    loader.style.display =
+                        "none";
 
                 },
+
                 500
+
             );
 
         }
 
-        console.log("AERIS READY");
+
+        console.log(
+            "AERIS READY"
+        );
 
     },
 
@@ -640,6 +1087,7 @@ gltfLoader.load(
     /* =====================================================
        LOADING PROGRESS
     ===================================================== */
+
 
     (progress) => {
 
@@ -649,18 +1097,24 @@ gltfLoader.load(
 
             const percent =
                 Math.round(
+
                     (
                         progress.loaded /
                         progress.total
                     ) * 100
+
                 );
+
 
             const loadingProgress =
                 document.getElementById(
                     "loadingProgress"
                 );
 
-            if (loadingProgress) {
+
+            if (
+                loadingProgress
+            ) {
 
                 loadingProgress.textContent =
                     `${percent}%`;
@@ -676,6 +1130,7 @@ gltfLoader.load(
        GLB ERROR
     ===================================================== */
 
+
     (error) => {
 
         console.error(
@@ -683,12 +1138,16 @@ gltfLoader.load(
             error
         );
 
+
         const loadingProgress =
             document.getElementById(
                 "loadingProgress"
             );
 
-        if (loadingProgress) {
+
+        if (
+            loadingProgress
+        ) {
 
             loadingProgress.textContent =
                 "ERROR";
@@ -704,10 +1163,13 @@ gltfLoader.load(
    FIT MODEL TO SCENE
 ========================================================= */
 
+
 function fitModelToScene() {
 
     if (!aerisModel) {
+
         return;
+
     }
 
 
@@ -737,8 +1199,10 @@ function fitModelToScene() {
     aerisModel.position.x -=
         center.x;
 
+
     aerisModel.position.y -=
         center.y;
+
 
     aerisModel.position.z -=
         center.z;
@@ -756,7 +1220,8 @@ function fitModelToScene() {
         );
 
 
-    const targetSize = 3.6;
+    const targetSize =
+        3.6;
 
 
     if (
@@ -766,6 +1231,7 @@ function fitModelToScene() {
         const scale =
             targetSize /
             maxDimension;
+
 
         aerisModel.scale.setScalar(
             scale
@@ -778,7 +1244,8 @@ function fitModelToScene() {
        MODEL POSITION
     --------------------------------------------- */
 
-    aerisModel.position.y = 0;
+    aerisModel.position.y =
+        0;
 
 
     /* ---------------------------------------------
@@ -798,6 +1265,7 @@ function fitModelToScene() {
         0
     );
 
+
     controls.update();
 
 }
@@ -805,15 +1273,17 @@ function fitModelToScene() {
 
 /* =========================================================
    CREATE CONFIGURED MATERIAL
+=========================================================
+
+   This function is ONLY used by the
+   configurable Outer Shell parts.
+
 ========================================================= */
+
 
 function createConfiguredMaterial(
     originalMaterial
 ) {
-
-    const material =
-        originalMaterial.clone();
-
 
     const settings =
         materialSettings[
@@ -821,13 +1291,154 @@ function createConfiguredMaterial(
         ];
 
 
-    if (settings) {
+    /*
+       For Glass we create a real
+       MeshPhysicalMaterial.
 
-        material.roughness =
-            settings.roughness;
+       This is important because normal
+       MeshStandardMaterial does not give us
+       proper transmission.
+    */
 
-        material.metalness =
-            settings.metalness;
+    if (
+        config.material === "glass"
+    ) {
+
+        const material =
+            new THREE.MeshPhysicalMaterial({
+
+                color:
+                    colorData[
+                        config.color
+                    ],
+
+                map:
+                    originalMaterial.map ||
+                    null,
+
+                normalMap:
+                    originalMaterial.normalMap ||
+                    null,
+
+                roughnessMap:
+                    originalMaterial.roughnessMap ||
+                    null,
+
+                metalnessMap:
+                    originalMaterial.metalnessMap ||
+                    null,
+
+                aoMap:
+                    originalMaterial.aoMap ||
+                    null,
+
+                emissiveMap:
+                    originalMaterial.emissiveMap ||
+                    null,
+
+                bumpMap:
+                    originalMaterial.bumpMap ||
+                    null,
+
+                displacementMap:
+                    originalMaterial.displacementMap ||
+                    null,
+
+                roughness:
+                    settings.roughness,
+
+                metalness:
+                    settings.metalness,
+
+                transmission:
+                    settings.transmission,
+
+                thickness:
+                    settings.thickness,
+
+                ior:
+                    settings.ior,
+
+                opacity:
+                    settings.opacity,
+
+                transparent:
+                    true,
+
+                depthWrite:
+                    false
+
+            });
+
+
+        /*
+           Preserve normal scale
+        */
+
+        if (
+            originalMaterial.normalScale
+        ) {
+
+            material.normalScale.copy(
+                originalMaterial.normalScale
+            );
+
+        }
+
+
+        /*
+           Preserve emissive settings
+        */
+
+        if (
+            originalMaterial.emissive
+        ) {
+
+            material.emissive.copy(
+                originalMaterial.emissive
+            );
+
+        }
+
+
+        return material;
+
+    }
+
+
+    /*
+       MATTE / METAL
+
+       Clone original material so
+       textures remain intact.
+    */
+
+    const material =
+        originalMaterial.clone();
+
+
+    if (
+        settings
+    ) {
+
+        if (
+            "roughness" in material
+        ) {
+
+            material.roughness =
+                settings.roughness;
+
+        }
+
+
+        if (
+            "metalness" in material
+        ) {
+
+            material.metalness =
+                settings.metalness;
+
+        }
 
 
         if (
@@ -849,14 +1460,27 @@ function createConfiguredMaterial(
 
         }
 
+
+        if (
+            "opacity" in material
+        ) {
+
+            material.opacity =
+                settings.opacity;
+
+        }
+
     }
 
 
-    /* ---------------------------------------------
-       ONLY CONFIGURABLE PARTS GET COLOR
-    --------------------------------------------- */
+    /*
+       Only configurable parts
+       receive selected color.
+    */
 
-    if (material.color) {
+    if (
+        material.color
+    ) {
 
         material.color.set(
             colorData[
@@ -877,12 +1501,14 @@ function createConfiguredMaterial(
 =========================================================
 
    ONLY:
+
    - OuterShell L
    - OuterShell R
    - Connector
    - HeadCushinCase
 
 ========================================================= */
+
 
 function updateMaterial() {
 
@@ -894,13 +1520,18 @@ function updateMaterial() {
                     mesh.uuid
                 );
 
+
             if (!original) {
+
                 return;
+
             }
 
 
             if (
-                Array.isArray(original)
+                Array.isArray(
+                    original
+                )
             ) {
 
                 mesh.material =
@@ -911,7 +1542,9 @@ function updateMaterial() {
                             )
                     );
 
-            } else {
+            }
+
+            else {
 
                 mesh.material =
                     createConfiguredMaterial(
@@ -923,6 +1556,14 @@ function updateMaterial() {
         }
     );
 
+
+    /*
+       Material changes should NOT
+       affect the Inner Cushions.
+    */
+
+    updateInnerCushions();
+
 }
 
 
@@ -930,20 +1571,22 @@ function updateMaterial() {
    UPDATE COLOR
 =========================================================
 
-   ONLY CONFIGURABLE PARTS CHANGE COLOR.
+   ONLY CONFIGURABLE OUTER PARTS
+   CHANGE COLOR.
 
 ========================================================= */
 
+
 function updateColor() {
+
+    const color =
+        colorData[
+            config.color
+        ];
+
 
     configurableMeshes.forEach(
         mesh => {
-
-            const color =
-                colorData[
-                    config.color
-                ];
-
 
             if (
                 Array.isArray(
@@ -968,7 +1611,9 @@ function updateColor() {
                     }
                 );
 
-            } else if (
+            }
+
+            else if (
                 mesh.material &&
                 mesh.material.color
             ) {
@@ -982,12 +1627,21 @@ function updateColor() {
         }
     );
 
+
+    /*
+       Inner Cushions get
+       their own lighter version.
+    */
+
+    updateInnerCushions();
+
 }
 
 
 /* =========================================================
    UPDATE FINISH
 ========================================================= */
+
 
 function updateFinish() {
 
@@ -1021,19 +1675,28 @@ function updateFinish() {
    UPDATE LIGHTING
 ========================================================= */
 
+
 function updateLighting() {
 
     if (
         config.lighting === "studio"
     ) {
 
-        ambientLight.intensity = 1.5;
+        ambientLight.intensity =
+            1.5;
 
-        keyLight.intensity = 4;
 
-        fillLight.intensity = 2;
+        keyLight.intensity =
+            4;
 
-        rimLight.intensity = 3;
+
+        fillLight.intensity =
+            2;
+
+
+        rimLight.intensity =
+            3;
+
 
         rimLight.color.set(
             0xc8ff00
@@ -1046,13 +1709,21 @@ function updateLighting() {
         config.lighting === "night"
     ) {
 
-        ambientLight.intensity = 0.45;
+        ambientLight.intensity =
+            0.45;
 
-        keyLight.intensity = 1.5;
 
-        fillLight.intensity = 0.8;
+        keyLight.intensity =
+            1.5;
 
-        rimLight.intensity = 4;
+
+        fillLight.intensity =
+            0.8;
+
+
+        rimLight.intensity =
+            4;
+
 
         rimLight.color.set(
             0x4d7cff
@@ -1065,13 +1736,21 @@ function updateLighting() {
         config.lighting === "neon"
     ) {
 
-        ambientLight.intensity = 0.3;
+        ambientLight.intensity =
+            0.3;
 
-        keyLight.intensity = 1;
 
-        fillLight.intensity = 2.5;
+        keyLight.intensity =
+            1;
 
-        rimLight.intensity = 5;
+
+        fillLight.intensity =
+            2.5;
+
+
+        rimLight.intensity =
+            5;
+
 
         rimLight.color.set(
             0xc8ff00
@@ -1085,6 +1764,7 @@ function updateLighting() {
 /* =========================================================
    UPDATE UI
 ========================================================= */
+
 
 function updateUI() {
 
@@ -1124,7 +1804,10 @@ function updateUI() {
             "materialValue"
         );
 
-    if (materialValue) {
+
+    if (
+        materialValue
+    ) {
 
         materialValue.textContent =
             materialNames[
@@ -1139,7 +1822,10 @@ function updateUI() {
             "finishValue"
         );
 
-    if (finishValue) {
+
+    if (
+        finishValue
+    ) {
 
         finishValue.textContent =
             finishNames[
@@ -1154,7 +1840,10 @@ function updateUI() {
             "lightingValue"
         );
 
-    if (lightingValue) {
+
+    if (
+        lightingValue
+    ) {
 
         lightingValue.textContent =
             lightingNames[
@@ -1183,7 +1872,10 @@ function updateUI() {
             "productPrice"
         );
 
-    if (productPrice) {
+
+    if (
+        productPrice
+    ) {
 
         productPrice.textContent =
             `€${price}`;
@@ -1200,7 +1892,10 @@ function updateUI() {
             "configurationName"
         );
 
-    if (configurationName) {
+
+    if (
+        configurationName
+    ) {
 
         configurationName.textContent =
             `AERIS / ${config.color.toUpperCase()}`;
@@ -1214,177 +1909,194 @@ function updateUI() {
    MATERIAL BUTTONS
 ========================================================= */
 
+
 document
     .querySelectorAll(
         ".material-option"
     )
-    .forEach(button => {
+    .forEach(
+        button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                document
-                    .querySelectorAll(
-                        ".material-option"
-                    )
-                    .forEach(item =>
-                        item.classList.remove(
-                            "active"
+                    document
+                        .querySelectorAll(
+                            ".material-option"
                         )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
+
+
+                    button.classList.add(
+                        "active"
                     );
 
 
-                button.classList.add(
-                    "active"
-                );
+                    config.material =
+                        button.dataset.material;
 
 
-                config.material =
-                    button.dataset.material;
+                    updateMaterial();
 
+                    updateUI();
 
-                updateMaterial();
+                }
+            );
 
-                updateUI();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
    COLOR BUTTONS
 ========================================================= */
 
+
 document
     .querySelectorAll(
         ".color-button"
     )
-    .forEach(button => {
+    .forEach(
+        button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                document
-                    .querySelectorAll(
-                        ".color-button"
-                    )
-                    .forEach(item =>
-                        item.classList.remove(
-                            "active"
+                    document
+                        .querySelectorAll(
+                            ".color-button"
                         )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
+
+
+                    button.classList.add(
+                        "active"
                     );
 
 
-                button.classList.add(
-                    "active"
-                );
+                    config.color =
+                        button.dataset.color;
 
 
-                config.color =
-                    button.dataset.color;
+                    updateColor();
 
+                    updateUI();
 
-                updateColor();
+                }
+            );
 
-                updateUI();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
    FINISH BUTTONS
 ========================================================= */
 
+
 document
     .querySelectorAll(
         ".finish-option"
     )
-    .forEach(button => {
+    .forEach(
+        button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                document
-                    .querySelectorAll(
-                        ".finish-option"
-                    )
-                    .forEach(item =>
-                        item.classList.remove(
-                            "active"
+                    document
+                        .querySelectorAll(
+                            ".finish-option"
                         )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
+
+
+                    button.classList.add(
+                        "active"
                     );
 
 
-                button.classList.add(
-                    "active"
-                );
+                    config.finish =
+                        button.dataset.finish;
 
 
-                config.finish =
-                    button.dataset.finish;
+                    updateFinish();
 
+                }
+            );
 
-                updateFinish();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
    LIGHTING BUTTONS
 ========================================================= */
 
+
 document
     .querySelectorAll(
         ".lighting-option"
     )
-    .forEach(button => {
+    .forEach(
+        button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                document
-                    .querySelectorAll(
-                        ".lighting-option"
-                    )
-                    .forEach(item =>
-                        item.classList.remove(
-                            "active"
+                    document
+                        .querySelectorAll(
+                            ".lighting-option"
                         )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
+
+
+                    button.classList.add(
+                        "active"
                     );
 
 
-                button.classList.add(
-                    "active"
-                );
+                    config.lighting =
+                        button.dataset.lighting;
 
 
-                config.lighting =
-                    button.dataset.lighting;
+                    updateLighting();
 
+                }
+            );
 
-                updateLighting();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
    CAMERA PRESETS
 ========================================================= */
+
 
 const cameraPositions = {
 
@@ -1470,44 +2182,49 @@ document
     .querySelectorAll(
         ".camera-button"
     )
-    .forEach(button => {
+    .forEach(
+        button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                const preset =
-                    cameraPositions[
-                        button.dataset.camera
-                    ];
+                    const preset =
+                        cameraPositions[
+                            button.dataset.camera
+                        ];
 
 
-                if (!preset) {
-                    return;
+                    if (!preset) {
+
+                        return;
+
+                    }
+
+
+                    camera.position.copy(
+                        preset.position
+                    );
+
+
+                    controls.target.copy(
+                        preset.target
+                    );
+
+
+                    controls.update();
+
                 }
+            );
 
-
-                camera.position.copy(
-                    preset.position
-                );
-
-
-                controls.target.copy(
-                    preset.target
-                );
-
-
-                controls.update();
-
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
    CONFIGURATION BUTTON
 ========================================================= */
+
 
 const addConfiguration =
     document.getElementById(
@@ -1515,7 +2232,9 @@ const addConfiguration =
     );
 
 
-if (addConfiguration) {
+if (
+    addConfiguration
+) {
 
     addConfiguration.addEventListener(
         "click",
@@ -1528,7 +2247,9 @@ if (addConfiguration) {
 
 
             if (!message) {
+
                 return;
+
             }
 
 
@@ -1549,7 +2270,9 @@ if (addConfiguration) {
                     );
 
                 },
+
                 2200
+
             );
 
         }
@@ -1562,6 +2285,7 @@ if (addConfiguration) {
    RESIZE
 ========================================================= */
 
+
 window.addEventListener(
     "resize",
     () => {
@@ -1569,6 +2293,7 @@ window.addEventListener(
         camera.aspect =
             window.innerWidth /
             window.innerHeight;
+
 
         camera.updateProjectionMatrix();
 
@@ -1585,6 +2310,7 @@ window.addEventListener(
 /* =========================================================
    ANIMATION
 ========================================================= */
+
 
 function animate() {
 
