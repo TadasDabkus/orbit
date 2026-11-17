@@ -3,87 +3,434 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 
 /* =========================================================
-   ORBIT — INTERACTIVE PRODUCT CONFIGURATOR
-   ========================================================= */
+   ORBIT — AERIS PRODUCT CONFIGURATOR
+========================================================= */
+
+const canvas = document.getElementById("productCanvas");
+
+const renderer = new THREE.WebGPURenderer({
+    canvas,
+    antialias: true
+});
+
+await renderer.init();
+
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
 
 
 /* =========================================================
-   DOM
-   ========================================================= */
+   SCENE
+========================================================= */
 
-const canvasContainer =
-    document.getElementById("productCanvas");
+const scene = new THREE.Scene();
 
-const loadingScreen =
-    document.querySelector(".loading-screen");
-
-const loadingProgress =
-    document.getElementById("loadingProgress");
-
-const cameraButtons =
-    document.querySelectorAll(".camera-button");
-
-const materialButtons =
-    document.querySelectorAll(".material-option");
-
-const colorButtons =
-    document.querySelectorAll(".color-button");
-
-const finishButtons =
-    document.querySelectorAll(".finish-option");
-
-const lightingButtons =
-    document.querySelectorAll(".lighting-option");
-
-const configurationName =
-    document.getElementById("configurationName");
-
-const materialValue =
-    document.getElementById("materialValue");
-
-const finishValue =
-    document.getElementById("finishValue");
-
-const lightingValue =
-    document.getElementById("lightingValue");
-
-const productPrice =
-    document.getElementById("productPrice");
-
-const addConfiguration =
-    document.getElementById("addConfiguration");
-
-const configurationMessage =
-    document.getElementById("configurationMessage");
+scene.background = new THREE.Color(0x080909);
 
 
 /* =========================================================
-   CONFIGURATION STATE
-   ========================================================= */
+   CAMERA
+========================================================= */
+
+const camera = new THREE.PerspectiveCamera(
+    42,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+);
+
+camera.position.set(0, 1.8, 6.5);
+
+
+/* =========================================================
+   CONTROLS
+========================================================= */
+
+const controls = new OrbitControls(camera, renderer.domElement);
+
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+
+controls.minDistance = 3.8;
+controls.maxDistance = 9;
+
+controls.minPolarAngle = 0.65;
+controls.maxPolarAngle = 2.35;
+
+controls.target.set(0, 0.4, 0);
+
+controls.update();
+
+
+/* =========================================================
+   LIGHTING
+========================================================= */
+
+const ambientLight = new THREE.AmbientLight(
+    0xffffff,
+    1.4
+);
+
+scene.add(ambientLight);
+
+
+const keyLight = new THREE.DirectionalLight(
+    0xffffff,
+    4
+);
+
+keyLight.position.set(4, 6, 5);
+
+scene.add(keyLight);
+
+
+const fillLight = new THREE.DirectionalLight(
+    0x9bbcff,
+    2
+);
+
+fillLight.position.set(-5, 2, 3);
+
+scene.add(fillLight);
+
+
+const rimLight = new THREE.DirectionalLight(
+    0xc8ff00,
+    3
+);
+
+rimLight.position.set(0, 4, -6);
+
+scene.add(rimLight);
+
+
+/* =========================================================
+   AERIS PRODUCT
+========================================================= */
+
+const product = new THREE.Group();
+
+product.position.y = 0.15;
+
+scene.add(product);
+
+
+/* =========================================================
+   MATERIALS
+========================================================= */
+
+const materials = {
+
+    matte: new THREE.MeshPhysicalMaterial({
+        color: 0x151719,
+        roughness: 0.48,
+        metalness: 0.05
+    }),
+
+    metal: new THREE.MeshPhysicalMaterial({
+        color: 0x25282b,
+        roughness: 0.2,
+        metalness: 0.9
+    }),
+
+    glass: new THREE.MeshPhysicalMaterial({
+        color: 0x252a2e,
+        roughness: 0.08,
+        metalness: 0.1,
+        transmission: 0.35,
+        thickness: 0.6
+    }),
+
+    pad: new THREE.MeshPhysicalMaterial({
+        color: 0x080909,
+        roughness: 0.8,
+        metalness: 0
+    }),
+
+    accent: new THREE.MeshPhysicalMaterial({
+        color: 0xc8ff00,
+        roughness: 0.25,
+        metalness: 0.45
+    })
+
+};
+
+
+/* =========================================================
+   GEOMETRY HELPERS
+========================================================= */
+
+function createMesh(
+    geometry,
+    material,
+    position = [0, 0, 0],
+    rotation = [0, 0, 0]
+) {
+
+    const mesh = new THREE.Mesh(
+        geometry,
+        material
+    );
+
+    mesh.position.set(...position);
+    mesh.rotation.set(...rotation);
+
+    product.add(mesh);
+
+    return mesh;
+}
+
+
+/* =========================================================
+   HEADBAND
+========================================================= */
+
+const headband = createMesh(
+
+    new THREE.TorusGeometry(
+        1.72,
+        0.105,
+        32,
+        96,
+        Math.PI
+    ),
+
+    materials.matte,
+
+    [0, 0.8, 0],
+
+    [Math.PI / 2, 0, 0]
+
+);
+
+
+/* =========================================================
+   INNER HEADBAND
+========================================================= */
+
+const innerBand = createMesh(
+
+    new THREE.TorusGeometry(
+        1.52,
+        0.055,
+        24,
+        96,
+        Math.PI
+    ),
+
+    materials.pad,
+
+    [0, 0.79, 0],
+
+    [Math.PI / 2, 0, 0]
+
+);
+
+
+/* =========================================================
+   EAR CUPS
+========================================================= */
+
+const cupGeometry = new THREE.CylinderGeometry(
+    0.58,
+    0.58,
+    0.32,
+    48
+);
+
+const leftCup = createMesh(
+    cupGeometry,
+    materials.matte,
+    [-1.45, 0.05, 0],
+    [0, 0, Math.PI / 2]
+);
+
+const rightCup = createMesh(
+    cupGeometry.clone(),
+    materials.matte,
+    [1.45, 0.05, 0],
+    [0, 0, Math.PI / 2]
+);
+
+
+/* =========================================================
+   EAR CUP OUTER RINGS
+========================================================= */
+
+const ringGeometry = new THREE.TorusGeometry(
+    0.52,
+    0.045,
+    24,
+    64
+);
+
+createMesh(
+    ringGeometry,
+    materials.accent,
+    [-1.61, 0.05, 0],
+    [0, Math.PI / 2, 0]
+);
+
+createMesh(
+    ringGeometry.clone(),
+    materials.accent,
+    [1.61, 0.05, 0],
+    [0, Math.PI / 2, 0]
+);
+
+
+/* =========================================================
+   EAR PADS
+========================================================= */
+
+const padGeometry = new THREE.CylinderGeometry(
+    0.44,
+    0.44,
+    0.18,
+    48
+);
+
+createMesh(
+    padGeometry,
+    materials.pad,
+    [-1.63, 0.05, 0],
+    [0, Math.PI / 2, 0]
+);
+
+createMesh(
+    padGeometry.clone(),
+    materials.pad,
+    [1.63, 0.05, 0],
+    [0, Math.PI / 2, 0]
+);
+
+
+/* =========================================================
+   CENTER BRIDGE
+========================================================= */
+
+const bridgeGeometry = new THREE.BoxGeometry(
+    1.55,
+    0.16,
+    0.16
+);
+
+createMesh(
+    bridgeGeometry,
+    materials.matte,
+    [0, 0.75, 0]
+);
+
+
+/* =========================================================
+   BRIDGE ACCENT
+========================================================= */
+
+const bridgeAccent = createMesh(
+    new THREE.BoxGeometry(
+        0.8,
+        0.035,
+        0.035
+    ),
+    materials.accent,
+    [0, 0.84, 0.09]
+);
+
+
+/* =========================================================
+   SIDE CONNECTORS
+========================================================= */
+
+const connectorGeometry = new THREE.CylinderGeometry(
+    0.09,
+    0.09,
+    0.45,
+    24
+);
+
+createMesh(
+    connectorGeometry,
+    materials.metal,
+    [-1.18, 0.42, 0]
+);
+
+createMesh(
+    connectorGeometry.clone(),
+    materials.metal,
+    [1.18, 0.42, 0]
+);
+
+
+/* =========================================================
+   PRODUCT DETAILS
+========================================================= */
+
+const detailMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x6c7375,
+    roughness: 0.25,
+    metalness: 0.7
+});
+
+
+/* small side details */
+
+createMesh(
+    new THREE.BoxGeometry(
+        0.06,
+        0.24,
+        0.12
+    ),
+    detailMaterial,
+    [-1.82, 0.05, 0]
+);
+
+createMesh(
+    new THREE.BoxGeometry(
+        0.06,
+        0.24,
+        0.12
+    ),
+    detailMaterial,
+    [1.82, 0.05, 0]
+);
+
+
+/* =========================================================
+   CONFIGURATION
+========================================================= */
 
 const config = {
 
     material: "matte",
-
     color: "black",
-
     finish: "dark",
-
     lighting: "studio"
 
 };
 
 
 /* =========================================================
-   PRODUCT PRICING
-   ========================================================= */
+   COLOR DATA
+========================================================= */
+
+const colorData = {
+
+    black: 0x151719,
+    white: 0xe7e9e6,
+    orange: 0xff6b22,
+    lime: 0xc8ff00
+
+};
+
+
+/* =========================================================
+   PRICE DATA
+========================================================= */
 
 const materialPrices = {
 
     matte: 0,
-
     metal: 35,
-
     glass: 70
 
 };
@@ -91,229 +438,68 @@ const materialPrices = {
 const colorPrices = {
 
     black: 0,
-
     white: 0,
-
     orange: 15,
-
     lime: 20
 
 };
 
 
 /* =========================================================
-   THREE.JS
-   ========================================================= */
+   PRODUCT MATERIAL OBJECTS
+========================================================= */
 
-const scene =
-    new THREE.Scene();
+const mainParts = [];
 
-scene.background =
-    new THREE.Color(0x090a0a);
+product.traverse(object => {
 
+    if (
+        object.isMesh &&
+        object.material !== materials.pad &&
+        object.material !== materials.accent &&
+        object.material !== detailMaterial
+    ) {
 
-/* =========================================================
-   CAMERA
-   ========================================================= */
+        mainParts.push(object);
 
-const camera =
-    new THREE.PerspectiveCamera(
-        45,
-        canvasContainer.clientWidth /
-        canvasContainer.clientHeight,
-        0.1,
-        100
-    );
+    }
 
-camera.position.set(
-    0,
-    1.4,
-    5.2
-);
+});
 
 
 /* =========================================================
-   RENDERER
-   ========================================================= */
+   UPDATE MATERIAL
+========================================================= */
 
-const renderer =
-    new THREE.WebGPURenderer({
-        antialias: true,
-        alpha: false
-    });
+function updateMaterial() {
 
-renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio, 2)
-);
+    let selectedMaterial;
 
-renderer.setSize(
-    canvasContainer.clientWidth,
-    canvasContainer.clientHeight
-);
+    if (config.material === "matte") {
 
-renderer.shadowMap.enabled = true;
+        selectedMaterial = materials.matte.clone();
 
-canvasContainer.appendChild(
-    renderer.domElement
-);
-
-await renderer.init();
-
-
-/* =========================================================
-   CONTROLS
-   ========================================================= */
-
-const controls =
-    new OrbitControls(
-        camera,
-        renderer.domElement
-    );
-
-controls.enableDamping = true;
-
-controls.dampingFactor = 0.06;
-
-controls.minDistance = 3.5;
-
-controls.maxDistance = 8;
-
-controls.target.set(
-    0,
-    0.8,
-    0
-);
-
-
-/* =========================================================
-   LIGHTING
-   ========================================================= */
-
-const ambientLight =
-    new THREE.AmbientLight(
-        0xffffff,
-        1.8
-    );
-
-scene.add(ambientLight);
-
-
-const keyLight =
-    new THREE.DirectionalLight(
-        0xffffff,
-        4
-    );
-
-keyLight.position.set(
-    3,
-    5,
-    4
-);
-
-keyLight.castShadow = true;
-
-scene.add(keyLight);
-
-
-const fillLight =
-    new THREE.DirectionalLight(
-        0xaab8ff,
-        1.5
-    );
-
-fillLight.position.set(
-    -4,
-    2,
-    2
-);
-
-scene.add(fillLight);
-
-
-const rimLight =
-    new THREE.DirectionalLight(
-        0xc8ff00,
-        1.5
-    );
-
-rimLight.position.set(
-    0,
-    3,
-    -5
-);
-
-scene.add(rimLight);
-
-
-/* =========================================================
-   PRODUCT GROUP
-   ========================================================= */
-
-const product =
-    new THREE.Group();
-
-scene.add(product);
-
-
-/* =========================================================
-   MATERIAL HELPERS
-   ========================================================= */
-
-function createProductMaterial() {
-
-    let roughness = 0.82;
-
-    let metalness = 0.05;
-
-    let transmission = 0;
-
-    let opacity = 1;
-
-    let transparent = false;
-
+    }
 
     if (config.material === "metal") {
 
-        roughness = 0.25;
-
-        metalness = 0.95;
+        selectedMaterial = materials.metal.clone();
 
     }
-
 
     if (config.material === "glass") {
 
-        roughness = 0.08;
-
-        metalness = 0.05;
-
-        transmission = 0.75;
-
-        opacity = 0.7;
-
-        transparent = true;
+        selectedMaterial = materials.glass.clone();
 
     }
 
+    selectedMaterial.color.set(
+        colorData[config.color]
+    );
 
-    return new THREE.MeshPhysicalMaterial({
+    mainParts.forEach(mesh => {
 
-        color:
-            getProductColor(),
-
-        roughness,
-
-        metalness,
-
-        transmission,
-
-        opacity,
-
-        transparent,
-
-        clearcoat: 0.6,
-
-        clearcoatRoughness: 0.2
+        mesh.material = selectedMaterial.clone();
 
     });
 
@@ -321,1010 +507,507 @@ function createProductMaterial() {
 
 
 /* =========================================================
-   COLORS
-   ========================================================= */
+   UPDATE COLOR
+========================================================= */
 
-function getProductColor() {
+function updateColor() {
 
-    const colors = {
+    mainParts.forEach(mesh => {
 
-        black: 0x171919,
+        mesh.material.color.set(
+            colorData[config.color]
+        );
 
-        white: 0xe6e8e5,
-
-        orange: 0xf06d2f,
-
-        lime: 0xc8ff00
-
-    };
-
-    return colors[config.color];
+    });
 
 }
 
 
 /* =========================================================
-   CREATE AERIS
-   ========================================================= */
+   UPDATE FINISH
+========================================================= */
 
-function createAeris() {
+function updateFinish() {
 
-    product.clear();
+    if (config.finish === "dark") {
 
-
-    const material =
-        createProductMaterial();
-
-
-    /* =========================
-       HEADBAND
-    ========================= */
-
-    const headbandGeometry =
-        new THREE.TorusGeometry(
-            1.25,
-            0.11,
-            32,
-            96,
-            Math.PI
+        scene.background = new THREE.Color(
+            0x080909
         );
 
-    const headband =
-        new THREE.Mesh(
-            headbandGeometry,
-            material
+    }
+
+    if (config.finish === "light") {
+
+        scene.background = new THREE.Color(
+            0xe9ebe8
         );
 
-    headband.rotation.z =
-        Math.PI;
-
-    headband.position.y =
-        1.15;
-
-    headband.scale.set(
-        1,
-        0.72,
-        1
-    );
-
-    headband.castShadow = true;
-
-    product.add(headband);
-
-
-    /* =========================
-       LEFT EAR CUP
-    ========================= */
-
-    const cupGeometry =
-        new THREE.CylinderGeometry(
-            0.58,
-            0.58,
-            0.32,
-            48
-        );
-
-    const leftCup =
-        new THREE.Mesh(
-            cupGeometry,
-            material
-        );
-
-    leftCup.rotation.z =
-        Math.PI / 2;
-
-    leftCup.position.set(
-        -1.18,
-        0.25,
-        0
-    );
-
-    leftCup.castShadow = true;
-
-    product.add(leftCup);
-
-
-    /* =========================
-       RIGHT EAR CUP
-    ========================= */
-
-    const rightCup =
-        new THREE.Mesh(
-            cupGeometry,
-            material
-        );
-
-    rightCup.rotation.z =
-        Math.PI / 2;
-
-    rightCup.position.set(
-        1.18,
-        0.25,
-        0
-    );
-
-    rightCup.castShadow = true;
-
-    product.add(rightCup);
-
-
-    /* =========================
-       LEFT INNER PAD
-    ========================= */
-
-    const padMaterial =
-        new THREE.MeshPhysicalMaterial({
-
-            color: 0x090a0a,
-
-            roughness: 0.95,
-
-            metalness: 0
-
-        });
-
-
-    const padGeometry =
-        new THREE.CylinderGeometry(
-            0.43,
-            0.43,
-            0.12,
-            48
-        );
-
-
-    const leftPad =
-        new THREE.Mesh(
-            padGeometry,
-            padMaterial
-        );
-
-    leftPad.rotation.z =
-        Math.PI / 2;
-
-    leftPad.position.set(
-        -1.36,
-        0.25,
-        0
-    );
-
-    product.add(leftPad);
-
-
-    /* =========================
-       RIGHT INNER PAD
-    ========================= */
-
-    const rightPad =
-        new THREE.Mesh(
-            padGeometry,
-            padMaterial
-        );
-
-    rightPad.rotation.z =
-        Math.PI / 2;
-
-    rightPad.position.set(
-        1.36,
-        0.25,
-        0
-    );
-
-    product.add(rightPad);
-
-
-    /* =========================
-       CENTER BRIDGE
-    ========================= */
-
-    const bridgeGeometry =
-        new THREE.BoxGeometry(
-            1.9,
-            0.15,
-            0.22
-        );
-
-    const bridge =
-        new THREE.Mesh(
-            bridgeGeometry,
-            material
-        );
-
-    bridge.position.y =
-        0.95;
-
-    bridge.castShadow = true;
-
-    product.add(bridge);
-
-
-    /* =========================
-       SIDE CONNECTORS
-    ========================= */
-
-    const connectorGeometry =
-        new THREE.BoxGeometry(
-            0.16,
-            0.55,
-            0.2
-        );
-
-
-    const leftConnector =
-        new THREE.Mesh(
-            connectorGeometry,
-            material
-        );
-
-    leftConnector.position.set(
-        -1.05,
-        0.75,
-        0
-    );
-
-    product.add(leftConnector);
-
-
-    const rightConnector =
-        new THREE.Mesh(
-            connectorGeometry,
-            material
-        );
-
-    rightConnector.position.set(
-        1.05,
-        0.75,
-        0
-    );
-
-    product.add(rightConnector);
-
-
-    /* =========================
-       ACCENT RINGS
-    ========================= */
-
-    const accentMaterial =
-        new THREE.MeshStandardMaterial({
-
-            color:
-                config.color === "lime"
-                    ? 0x090a0a
-                    : 0xc8ff00,
-
-            metalness: 0.7,
-
-            roughness: 0.25
-
-        });
-
-
-    const accentGeometry =
-        new THREE.TorusGeometry(
-            0.49,
-            0.025,
-            16,
-            64
-        );
-
-
-    const leftAccent =
-        new THREE.Mesh(
-            accentGeometry,
-            accentMaterial
-        );
-
-    leftAccent.rotation.y =
-        Math.PI / 2;
-
-    leftAccent.position.set(
-        -1.37,
-        0.25,
-        0
-    );
-
-    product.add(leftAccent);
-
-
-    const rightAccent =
-        new THREE.Mesh(
-            accentGeometry,
-            accentMaterial
-        );
-
-    rightAccent.rotation.y =
-        Math.PI / 2;
-
-    rightAccent.position.set(
-        1.37,
-        0.25,
-        0
-    );
-
-    product.add(rightAccent);
-
-
-    /* =========================
-       PRODUCT SCALE
-    ========================= */
-
-    product.scale.set(
-        1,
-        1,
-        1
-    );
-
-
-    product.rotation.y =
-        -0.15;
+    }
 
 }
 
 
 /* =========================================================
-   LIGHTING MODES
-   ========================================================= */
+   UPDATE LIGHTING
+========================================================= */
 
 function updateLighting() {
 
     if (config.lighting === "studio") {
 
+        ambientLight.intensity = 1.4;
         keyLight.intensity = 4;
+        fillLight.intensity = 2;
+        rimLight.intensity = 3;
 
-        fillLight.intensity = 1.5;
-
-        rimLight.intensity = 1.5;
-
-        scene.background.set(
-            0x090a0a
-        );
+        rimLight.color.set(0xc8ff00);
 
     }
 
 
     if (config.lighting === "night") {
 
+        ambientLight.intensity = 0.45;
         keyLight.intensity = 1.5;
+        fillLight.intensity = 0.8;
+        rimLight.intensity = 4;
 
-        fillLight.intensity = 0.6;
-
-        rimLight.intensity = 3;
-
-        scene.background.set(
-            0x05070b
-        );
+        rimLight.color.set(0x4d7cff);
 
     }
 
 
     if (config.lighting === "neon") {
 
-        keyLight.intensity = 1.2;
+        ambientLight.intensity = 0.3;
+        keyLight.intensity = 1;
+        fillLight.intensity = 2.5;
+        rimLight.intensity = 5;
 
-        fillLight.intensity = 3;
-
-        rimLight.intensity = 4;
-
-        scene.background.set(
-            0x090b09
-        );
+        rimLight.color.set(0xc8ff00);
 
     }
-
-}
-
-
-/* =========================================================
-   FINISH
-   ========================================================= */
-
-function updateFinish() {
-
-    if (config.finish === "dark") {
-
-        scene.background.set(
-            config.lighting === "night"
-                ? 0x05070b
-                : 0x090a0a
-        );
-
-    }
-
-
-    if (config.finish === "light") {
-
-        scene.background.set(
-            0xdfe3df
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   UPDATE PRODUCT
-   ========================================================= */
-
-function updateProduct() {
-
-    createAeris();
-
-    updateLighting();
-
-    updateFinish();
-
-    updateUI();
 
 }
 
 
 /* =========================================================
    UPDATE UI
-   ========================================================= */
+========================================================= */
 
 function updateUI() {
 
     const materialNames = {
 
-        matte: "MATTE",
-
-        metal: "METAL",
-
-        glass: "GLASS"
+        matte: "Matte",
+        metal: "Metal",
+        glass: "Glass"
 
     };
-
-
-    const colorNames = {
-
-        black: "BLACK",
-
-        white: "WHITE",
-
-        orange: "ORANGE",
-
-        lime: "LIME"
-
-    };
-
 
     const finishNames = {
 
-        dark: "DARK",
-
-        light: "LIGHT"
+        dark: "Dark",
+        light: "Light"
 
     };
-
 
     const lightingNames = {
 
-        studio: "STUDIO",
-
-        night: "NIGHT",
-
-        neon: "NEON"
+        studio: "Studio",
+        night: "Night",
+        neon: "Neon"
 
     };
 
 
+    document.getElementById(
+        "materialValue"
+    ).textContent =
+        materialNames[config.material];
+
+
+    document.getElementById(
+        "finishValue"
+    ).textContent =
+        finishNames[config.finish];
+
+
+    document.getElementById(
+        "lightingValue"
+    ).textContent =
+        lightingNames[config.lighting];
+
+
     const price =
-        349 +
+        299 +
         materialPrices[config.material] +
         colorPrices[config.color];
 
 
-    configurationName.textContent =
-        `AERIS / ${colorNames[config.color]}`;
-
-
-    materialValue.textContent =
-        materialNames[config.material];
-
-
-    finishValue.textContent =
-        finishNames[config.finish];
-
-
-    lightingValue.textContent =
-        lightingNames[config.lighting];
-
-
-    productPrice.textContent =
+    document.getElementById(
+        "productPrice"
+    ).textContent =
         `€${price}`;
 
 
-    updateActiveButtons();
-
-}
-
-
-/* =========================================================
-   ACTIVE BUTTONS
-   ========================================================= */
-
-function updateActiveButtons() {
-
-    materialButtons.forEach(button => {
-
-        button.classList.toggle(
-            "active",
-            button.dataset.material ===
-            config.material
-        );
-
-    });
-
-
-    colorButtons.forEach(button => {
-
-        button.classList.toggle(
-            "active",
-            button.dataset.color ===
-            config.color
-        );
-
-    });
-
-
-    finishButtons.forEach(button => {
-
-        button.classList.toggle(
-            "active",
-            button.dataset.finish ===
-            config.finish
-        );
-
-    });
-
-
-    lightingButtons.forEach(button => {
-
-        button.classList.toggle(
-            "active",
-            button.dataset.lighting ===
-            config.lighting
-        );
-
-    });
+    document.getElementById(
+        "configurationName"
+    ).textContent =
+        `AERIS / ${config.color.toUpperCase()}`;
 
 }
 
 
 /* =========================================================
    MATERIAL BUTTONS
-   ========================================================= */
+========================================================= */
 
-materialButtons.forEach(button => {
+document
+    .querySelectorAll(".material-option")
+    .forEach(button => {
 
-    button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener("click", () => {
+
+            document
+                .querySelectorAll(".material-option")
+                .forEach(item =>
+                    item.classList.remove("active")
+                );
+
+            button.classList.add("active");
 
             config.material =
                 button.dataset.material;
 
-            updateProduct();
+            updateMaterial();
+            updateUI();
 
-        }
-    );
+        });
 
-});
+    });
 
 
 /* =========================================================
    COLOR BUTTONS
-   ========================================================= */
+========================================================= */
 
-colorButtons.forEach(button => {
+document
+    .querySelectorAll(".color-button")
+    .forEach(button => {
 
-    button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener("click", () => {
+
+            document
+                .querySelectorAll(".color-button")
+                .forEach(item =>
+                    item.classList.remove("active")
+                );
+
+            button.classList.add("active");
 
             config.color =
                 button.dataset.color;
 
-            updateProduct();
+            updateColor();
+            updateUI();
 
-        }
-    );
+        });
 
-});
+    });
 
 
 /* =========================================================
    FINISH BUTTONS
-   ========================================================= */
+========================================================= */
 
-finishButtons.forEach(button => {
+document
+    .querySelectorAll(".finish-option")
+    .forEach(button => {
 
-    button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener("click", () => {
+
+            document
+                .querySelectorAll(".finish-option")
+                .forEach(item =>
+                    item.classList.remove("active")
+                );
+
+            button.classList.add("active");
 
             config.finish =
                 button.dataset.finish;
 
-            updateProduct();
+            updateFinish();
 
-        }
-    );
+        });
 
-});
+    });
 
 
 /* =========================================================
    LIGHTING BUTTONS
-   ========================================================= */
+========================================================= */
 
-lightingButtons.forEach(button => {
+document
+    .querySelectorAll(".lighting-option")
+    .forEach(button => {
 
-    button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener("click", () => {
+
+            document
+                .querySelectorAll(".lighting-option")
+                .forEach(item =>
+                    item.classList.remove("active")
+                );
+
+            button.classList.add("active");
 
             config.lighting =
                 button.dataset.lighting;
 
-            updateProduct();
+            updateLighting();
 
-        }
-    );
+        });
 
-});
+    });
 
 
 /* =========================================================
-   CAMERA POSITIONS
-   ========================================================= */
+   CAMERA PRESETS
+========================================================= */
 
 const cameraPositions = {
 
     front: {
+        position: new THREE.Vector3(
+            0,
+            1.7,
+            6.5
+        ),
 
-        position:
-            new THREE.Vector3(
-                0,
-                1.2,
-                5.2
-            ),
-
-        target:
-            new THREE.Vector3(
-                0,
-                0.65,
-                0
-            )
-
+        target: new THREE.Vector3(
+            0,
+            0.3,
+            0
+        )
     },
-
 
     side: {
+        position: new THREE.Vector3(
+            6,
+            1.5,
+            0
+        ),
 
-        position:
-            new THREE.Vector3(
-                4.8,
-                1.1,
-                0
-            ),
-
-        target:
-            new THREE.Vector3(
-                0,
-                0.65,
-                0
-            )
-
+        target: new THREE.Vector3(
+            0,
+            0.3,
+            0
+        )
     },
-
 
     detail: {
+        position: new THREE.Vector3(
+            3.2,
+            1.2,
+            3.2
+        ),
 
-        position:
-            new THREE.Vector3(
-                2.8,
-                1.5,
-                2.4
-            ),
-
-        target:
-            new THREE.Vector3(
-                0.55,
-                0.45,
-                0
-            )
-
+        target: new THREE.Vector3(
+            0.8,
+            0.3,
+            0
+        )
     },
 
-
     top: {
+        position: new THREE.Vector3(
+            0,
+            6.2,
+            0.1
+        ),
 
-        position:
-            new THREE.Vector3(
-                0,
-                5.3,
-                0.2
-            ),
-
-        target:
-            new THREE.Vector3(
-                0,
-                0,
-                0
-            )
-
+        target: new THREE.Vector3(
+            0,
+            0,
+            0
+        )
     }
 
 };
 
 
-/* =========================================================
-   CAMERA ANIMATION
-   ========================================================= */
+document
+    .querySelectorAll(".camera-button")
+    .forEach(button => {
 
-let cameraAnimation = null;
-
-
-function animateCamera(
-    targetPosition,
-    targetLookAt
-) {
-
-    cameraAnimation = {
-
-        startPosition:
-            camera.position.clone(),
-
-        endPosition:
-            targetPosition.clone(),
-
-        startTarget:
-            controls.target.clone(),
-
-        endTarget:
-            targetLookAt.clone(),
-
-        startTime:
-            performance.now(),
-
-        duration:
-            800
-
-    };
-
-}
-
-
-/* =========================================================
-   CAMERA BUTTONS
-   ========================================================= */
-
-cameraButtons.forEach(button => {
-
-    button.addEventListener(
-        "click",
-        () => {
-
-            const cameraName =
-                button.dataset.camera;
+        button.addEventListener("click", () => {
 
             const preset =
-                cameraPositions[cameraName];
+                cameraPositions[
+                    button.dataset.camera
+                ];
 
-
-            cameraButtons.forEach(item => {
-
-                item.classList.remove(
-                    "active"
-                );
-
-            });
-
-
-            button.classList.add(
-                "active"
+            camera.position.copy(
+                preset.position
             );
 
-
-            animateCamera(
-                preset.position,
+            controls.target.copy(
                 preset.target
             );
 
-        }
-    );
+        });
 
-});
+    });
 
 
 /* =========================================================
    CONFIGURATION BUTTON
-   ========================================================= */
+========================================================= */
 
-addConfiguration.addEventListener(
-    "click",
-    () => {
+document
+    .getElementById("addConfiguration")
+    .addEventListener("click", () => {
 
-        configurationMessage.classList.add(
-            "visible"
-        );
+        const message =
+            document.getElementById(
+                "configurationMessage"
+            );
 
+        message.textContent =
+            "CONFIGURATION SAVED";
+
+        message.classList.add("visible");
 
         setTimeout(() => {
 
-            configurationMessage.classList.remove(
+            message.classList.remove(
                 "visible"
             );
 
         }, 2200);
 
-    }
-);
-
-
-/* =========================================================
-   CAMERA ANIMATION UPDATE
-   ========================================================= */
-
-function updateCameraAnimation() {
-
-    if (!cameraAnimation) {
-        return;
-    }
-
-
-    const elapsed =
-        performance.now() -
-        cameraAnimation.startTime;
-
-
-    let progress =
-        elapsed /
-        cameraAnimation.duration;
-
-
-    if (progress >= 1) {
-
-        progress = 1;
-
-        camera.position.copy(
-            cameraAnimation.endPosition
-        );
-
-        controls.target.copy(
-            cameraAnimation.endTarget
-        );
-
-        cameraAnimation = null;
-
-        return;
-
-    }
-
-
-    /* Cubic ease out */
-
-    const eased =
-        1 -
-        Math.pow(
-            1 - progress,
-            3
-        );
-
-
-    camera.position.lerpVectors(
-        cameraAnimation.startPosition,
-        cameraAnimation.endPosition,
-        eased
-    );
-
-
-    controls.target.lerpVectors(
-        cameraAnimation.startTarget,
-        cameraAnimation.endTarget,
-        eased
-    );
-
-}
+    });
 
 
 /* =========================================================
    RESIZE
-   ========================================================= */
-
-function resize() {
-
-    const width =
-        canvasContainer.clientWidth;
-
-    const height =
-        canvasContainer.clientHeight;
-
-
-    camera.aspect =
-        width / height;
-
-    camera.updateProjectionMatrix();
-
-
-    renderer.setSize(
-        width,
-        height
-    );
-
-}
-
+========================================================= */
 
 window.addEventListener(
     "resize",
-    resize
+    () => {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
 );
 
 
 /* =========================================================
-   INITIALIZE
-   ========================================================= */
+   INITIAL STATE
+========================================================= */
 
-function initialize() {
-
-    updateProduct();
-
-    loadingProgress.style.width =
-        "100%";
-
-
-    setTimeout(() => {
-
-        loadingScreen.classList.add(
-            "hidden"
-        );
-
-    }, 700);
-
-}
+updateMaterial();
+updateFinish();
+updateLighting();
+updateUI();
 
 
 /* =========================================================
-   RENDER LOOP
-   ========================================================= */
+   LOADING
+========================================================= */
+
+const loadingProgress =
+    document.getElementById(
+        "loadingProgress"
+    );
+
+let progress = 0;
+
+const loadingInterval =
+    setInterval(() => {
+
+        progress += 4;
+
+        if (progress >= 100) {
+
+            progress = 100;
+
+            clearInterval(
+                loadingInterval
+            );
+
+            setTimeout(() => {
+
+                const loader =
+                    document.querySelector(
+                        ".loading-screen"
+                    );
+
+                if (loader) {
+
+                    loader.classList.add(
+                        "loaded"
+                    );
+
+                }
+
+            }, 350);
+
+        }
+
+        if (loadingProgress) {
+
+            loadingProgress.textContent =
+                `${progress}%`;
+
+        }
+
+    }, 35);
+
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+const clock = new THREE.Clock();
 
 function animate() {
 
-    requestAnimationFrame(
-        animate
-    );
-
-
-    updateCameraAnimation();
-
+    const elapsed =
+        clock.getElapsedTime();
 
     controls.update();
 
+    /*
+       Very subtle product rotation.
+       OrbitControls still remains fully interactive.
+    */
 
-    /* Very subtle product idle motion */
-
-    if (!cameraAnimation) {
-
-        product.rotation.y +=
-            0.0008;
-
-    }
-
+    product.rotation.y =
+        Math.sin(elapsed * 0.18) * 0.035;
 
     renderer.render(
         scene,
         camera
     );
 
+    requestAnimationFrame(
+        animate
+    );
+
 }
-
-
-/* =========================================================
-   START
-   ========================================================= */
-
-initialize();
 
 animate();
