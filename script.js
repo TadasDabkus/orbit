@@ -6,15 +6,21 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
    ORBIT — AERIS PRODUCT CONFIGURATOR
 ========================================================= */
 
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+
 const container = document.getElementById("productCanvas");
 
-const renderer = new THREE.WebGPURenderer({
-    antialias: true
+
+/* =========================================================
+   RENDERER
+========================================================= */
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: false
 });
-
-await renderer.init();
-
-console.log("ORBIT SCRIPT RUNNING");
 
 renderer.setPixelRatio(
     Math.min(window.devicePixelRatio, 2)
@@ -26,6 +32,8 @@ renderer.setSize(
 );
 
 container.appendChild(renderer.domElement);
+
+console.log("ORBIT RENDERER READY");
 
 
 /* =========================================================
