@@ -274,8 +274,8 @@ const fixedMeshes = [];
 ========================================================= */
 
 /*
-   These are the parts whose appearance can change
-   when the user changes material/color.
+    These are the parts whose appearance can change
+    when the user changes material/color.
 */
 
 function isConfigurablePart(object) {
@@ -323,7 +323,7 @@ function isConfigurablePart(object) {
 
 
 /*
-   These are intentionally kept unchanged.
+    These are intentionally kept unchanged.
 */
 
 function isFixedPart(object) {
@@ -393,6 +393,10 @@ gltfLoader.load(
 
     "./AERIS_v01.glb",
 
+    /* =====================================================
+       SUCCESS
+    ===================================================== */
+
     (gltf) => {
 
         console.log("AERIS GLB LOADED");
@@ -414,17 +418,17 @@ gltfLoader.load(
             storeOriginalMaterial(object);
 
 
-            /*
-               Keep the original model geometry.
-            */
+            /* -----------------------------------------
+               MODEL SHADOWS
+            ----------------------------------------- */
 
             object.castShadow = true;
             object.receiveShadow = true;
 
 
-            /*
-               Fixed parts stay unchanged.
-            */
+            /* -----------------------------------------
+               FIXED PARTS
+            ----------------------------------------- */
 
             if (isFixedPart(object)) {
 
@@ -435,9 +439,9 @@ gltfLoader.load(
             }
 
 
-            /*
-               Configurable parts.
-            */
+            /* -----------------------------------------
+               CONFIGURABLE PARTS
+            ----------------------------------------- */
 
             if (isConfigurablePart(object)) {
 
@@ -456,6 +460,7 @@ gltfLoader.load(
             "Configurable meshes:",
             configurableMeshes.length
         );
+
 
         console.log(
             "Fixed meshes:",
@@ -496,18 +501,29 @@ gltfLoader.load(
            HIDE LOADING SCREEN
         --------------------------------------------- */
 
-        const loader = document.querySelector(".loading-screen");
+        const loader =
+            document.querySelector(
+                ".loading-screen"
+            );
 
-if (loader) {
-    loader.style.opacity = "0";
-    loader.style.pointerEvents = "none";
+        if (loader) {
 
-    setTimeout(() => {
-        loader.style.display = "none";
-    }, 500);
-}
+            loader.style.opacity = "0";
 
-console.log("AERIS READY");
+            loader.style.pointerEvents = "none";
+
+            setTimeout(() => {
+
+                loader.style.display = "none";
+
+            }, 500);
+
+        }
+
+
+        console.log("AERIS READY");
+
+    },
 
 
     /* =====================================================
@@ -516,9 +532,7 @@ console.log("AERIS READY");
 
     (progress) => {
 
-        if (
-            progress.total
-        ) {
+        if (progress.total) {
 
             const percent =
                 Math.round(
@@ -558,10 +572,12 @@ console.log("AERIS READY");
             error
         );
 
+
         const loadingProgress =
             document.getElementById(
                 "loadingProgress"
             );
+
 
         if (loadingProgress) {
 
@@ -693,42 +709,57 @@ function createConfiguredMaterial(
 
     if (settings) {
 
-        material.roughness =
-            settings.roughness;
-
-        material.metalness =
-            settings.metalness;
-
-
         if (
-            "transmission"
-            in material
+            "roughness" in material
         ) {
 
-            material.transmission =
-                settings.transmission;
+            material.roughness =
+                settings.roughness;
 
         }
 
 
         if (
-            "thickness"
-            in material
+            "metalness" in material
+        ) {
+
+            material.metalness =
+                settings.metalness;
+
+        }
+
+
+        if (
+            "transmission" in material
+        ) {
+
+            material.transmission =
+                settings.transmission || 0;
+
+        }
+
+
+        if (
+            "thickness" in material
         ) {
 
             material.thickness =
-                settings.thickness;
+                settings.thickness || 0;
 
         }
 
     }
 
 
-    material.color.set(
-        colorData[
-            config.color
-        ]
-    );
+    if (material.color) {
+
+        material.color.set(
+            colorData[
+                config.color
+            ]
+        );
+
+    }
 
 
     return material;
@@ -1317,6 +1348,10 @@ const cameraPositions = {
 
 };
 
+
+/* =========================================================
+   CAMERA BUTTONS
+========================================================= */
 
 document
     .querySelectorAll(
