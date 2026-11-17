@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ORBIT — Interactive Product Configurator</title>
+
+    <!-- Fonts -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Main CSS -->
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="topbar">
+
+        <a href="#" class="brand">
+
+            <span class="brand-mark">
+                O
+            </span>
+
+            <span class="brand-name">
+                ORBIT
+            </span>
+
+        </a>
+
+
+        <div class="topbar-center">
+
+            <span>
+                INTERACTIVE PRODUCT CONFIGURATOR
+            </span>
+
+        </div>
+
+
+        <div class="topbar-right">
+
+            <span class="system-status">
+
+                <span class="status-dot"></span>
+
+                SYSTEM READY
+
+            </span>
+
+            <span class="version">
+                v1.0
+            </span>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="main">
+
+
+        <!-- =================================================
+             PRODUCT VIEW
+        ================================================== -->
+
+        <section class="product-view">
+
+
+            <!-- VIEW INFORMATION -->
+
+            <div class="view-info">
+
+                <span class="section-label">
+                    ORBIT / PRODUCT 01
+                </span>
+
+                <h1>
+                    AERIS
+                </h1>
+
+                <p>
+                    Wireless spatial headphones
+                </p>
+
+            </div>
+
+
+            <!-- 3D CANVAS -->
+
+            <div
+                id="productCanvas"
+                class="product-canvas"
+            >
+
+                <div class="loading-screen">
+
+                    <div class="loading-mark">
+                        O
+                    </div>
+
+                    <span>
+                        INITIALIZING PRODUCT
+                    </span>
+
+                    <div class="loading-line">
+
+                        <div
+                            id="loadingProgress"
+                            class="loading-progress"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CAMERA CONTROLS -->
+
+            <div class="camera-controls">
+
+                <button
+                    class="camera-button active"
+                    data-camera="front"
+                >
+                    01
+                    <span>FRONT</span>
+                </button>
+
+                <button
+                    class="camera-button"
+                    data-camera="side"
+                >
+                    02
+                    <span>SIDE</span>
+                </button>
+
+                <button
+                    class="camera-button"
+                    data-camera="detail"
+                >
+                    03
+                    <span>DETAIL</span>
+                </button>
+
+                <button
+                    class="camera-button"
+                    data-camera="top"
+                >
+                    04
+                    <span>TOP</span>
+                </button>
+
+            </div>
+
+
+            <!-- VIEW HINT -->
+
+            <div class="view-hint">
+
+                <span>
+                    DRAG TO ROTATE
+                </span>
+
+                <span>
+                    SCROLL TO ZOOM
+                </span>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             CONFIGURATOR
+        ================================================== -->
+
+        <aside class="configurator">
+
+
+            <!-- CONFIG HEADER -->
+
+            <div class="config-header">
+
+                <div>
+
+                    <span class="section-label">
+                        CONFIGURE
+                    </span>
+
+                    <h2>
+                        Your AERIS
+                    </h2>
+
+                </div>
+
+                <span class="config-number">
+                    01 / 04
+                </span>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 MATERIAL
+            ================================================== -->
+
+            <div class="config-section">
+
+                <div class="config-title">
+
+                    <span>
+                        01
+                    </span>
+
+                    <strong>
+                        MATERIAL
+                    </strong>
+
+                </div>
+
+
+                <div class="option-grid">
+
+
+                    <button
+                        class="option-button material-option active"
+                        data-material="matte"
+                    >
+
+                        <span class="option-preview matte"></span>
+
+                        <span>
+                            MATTE
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        class="option-button material-option"
+                        data-material="metal"
+                    >
+
+                        <span class="option-preview metal"></span>
+
+                        <span>
+                            METAL
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        class="option-button material-option"
+                        data-material="glass"
+                    >
+
+                        <span class="option-preview glass"></span>
+
+                        <span>
+                            GLASS
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 COLOR
+            ================================================== -->
+
+            <div class="config-section">
+
+                <div class="config-title">
+
+                    <span>
+                        02
+                    </span>
+
+                    <strong>
+                        COLOR
+                    </strong>
+
+                </div>
+
+
+                <div class="color-options">
+
+
+                    <button
+                        class="color-button active"
+                        data-color="black"
+                        aria-label="Black"
+                    >
+                        <span class="color black"></span>
+                    </button>
+
+
+                    <button
+                        class="color-button"
+                        data-color="white"
+                        aria-label="White"
+                    >
+                        <span class="color white"></span>
+                    </button>
+
+
+                    <button
+                        class="color-button"
+                        data-color="orange"
+                        aria-label="Orange"
+                    >
+                        <span class="color orange"></span>
+                    </button>
+
+
+                    <button
+                        class="color-button"
+                        data-color="lime"
+                        aria-label="Lime"
+                    >
+                        <span class="color lime"></span>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 FINISH
+            ================================================== -->
+
+            <div class="config-section">
+
+                <div class="config-title">
+
+                    <span>
+                        03
+                    </span>
+
+                    <strong>
+                        FINISH
+                    </strong>
+
+                </div>
+
+
+                <div class="segmented-control">
+
+                    <button
+                        class="finish-option active"
+                        data-finish="dark"
+                    >
+                        DARK
+                    </button>
+
+                    <button
+                        class="finish-option"
+                        data-finish="light"
+                    >
+                        LIGHT
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 LIGHTING
+            ================================================== -->
+
+            <div class="config-section">
+
+                <div class="config-title">
+
+                    <span>
+                        04
+                    </span>
+
+                    <strong>
+                        LIGHTING
+                    </strong>
+
+                </div>
+
+
+                <div class="lighting-options">
+
+
+                    <button
+                        class="lighting-option active"
+                        data-lighting="studio"
+                    >
+
+                        <span class="lighting-icon">
+                            ◉
+                        </span>
+
+                        <span>
+                            STUDIO
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        class="lighting-option"
+                        data-lighting="night"
+                    >
+
+                        <span class="lighting-icon">
+                            ◐
+                        </span>
+
+                        <span>
+                            NIGHT
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        class="lighting-option"
+                        data-lighting="neon"
+                    >
+
+                        <span class="lighting-icon">
+                            ✦
+                        </span>
+
+                        <span>
+                            NEON
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CONFIGURATION SUMMARY
+            ================================================== -->
+
+            <div class="configuration-summary">
+
+
+                <div class="summary-row">
+
+                    <span>
+                        CONFIGURATION
+                    </span>
+
+                    <strong id="configurationName">
+                        AERIS / BLACK
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        MATERIAL
+                    </span>
+
+                    <strong id="materialValue">
+                        MATTE
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        FINISH
+                    </span>
+
+                    <strong id="finishValue">
+                        DARK
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        LIGHTING
+                    </span>
+
+                    <strong id="lightingValue">
+                        STUDIO
+                    </strong>
+
+                </div>
+
+
+                <div class="price-row">
+
+                    <span>
+                        TOTAL
+                    </span>
+
+                    <strong id="productPrice">
+                        €349
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 ACTION
+            ================================================== -->
+
+            <button
+                id="addConfiguration"
+                class="configure-button"
+            >
+
+                <span>
+                    ADD CONFIGURATION
+                </span>
+
+                <span>
+                    →
+                </span>
+
+            </button>
+
+
+
+            <div
+                id="configurationMessage"
+                class="configuration-message"
+            >
+                Configuration saved.
+            </div>
+
+
+        </aside>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="footer">
+
+        <div>
+            ORBIT / AERIS
+        </div>
+
+        <div>
+            INTERACTIVE PRODUCT SYSTEM
+        </div>
+
+        <div>
+            © 2026
+        </div>
+
+    </footer>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     THREE.JS IMPORT MAP
+========================================================== -->
+
+<script type="importmap">
+
+{
+    "imports": {
+
+        "three":
+            "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+
+        "three/addons/":
+            "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+
+    }
+}
+
+</script>
+
+
+
+<!-- Main JavaScript -->
+
+<script
+    type="module"
+    src="./script.js"
+></script>
+
+
+</body>
+
+</html>
