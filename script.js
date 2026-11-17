@@ -883,19 +883,14 @@ function updateInnerCushions() {
    APPLY FINISH TO MATERIAL
 =========================================================
 
-   IMPORTANT:
-
-   Finish changes the selected
+   DARK / LIGHT changes the selected
    Outer Shell appearance only.
 
-   It NEVER changes the scene background.
+   Background always stays dark.
 
 ========================================================= */
 
-
-function applyFinishToMaterial(
-    material
-) {
+function applyFinishToMaterial(material) {
 
     const finish =
         finishSettings[
@@ -904,53 +899,58 @@ function applyFinishToMaterial(
 
 
     if (!finish) {
-
         return;
-
     }
 
 
-    if (
-        material.color
-    ) {
-
-        /*
-           Convert current color to HSL
-           and modify brightness.
-
-           This gives us a much more
-           natural LIGHT / DARK finish.
-        */
+    if (material.color) {
 
         const color =
             material.color.clone();
 
-
         const hsl = {};
 
-
-        color.getHSL(
-            hsl
-        );
+        color.getHSL(hsl);
 
 
-        if (
-            config.finish === "dark"
-        ) {
+        /* ---------------------------------------------
+           DARK FINISH
+        --------------------------------------------- */
+
+        if (config.finish === "dark") {
+
+            /*
+               Dark should ALWAYS be darker
+               than Light.
+
+               The previous minimum of 0.05
+               caused black + matte to become
+               brighter when DARK was selected.
+            */
 
             hsl.l =
                 Math.max(
-                    hsl.l * finish.colorMultiplier,
-                    0.05
+                    hsl.l * 0.78,
+                    0.015
                 );
 
         }
 
+
+        /* ---------------------------------------------
+           LIGHT FINISH
+        --------------------------------------------- */
+
         else {
+
+            /*
+               Light increases brightness,
+               but only moderately.
+            */
 
             hsl.l =
                 Math.min(
-                    hsl.l * finish.colorMultiplier,
+                    hsl.l * 1.08,
                     0.98
                 );
 
@@ -971,6 +971,10 @@ function applyFinishToMaterial(
     }
 
 
+    /* ---------------------------------------------
+       ROUGHNESS
+    --------------------------------------------- */
+
     if (
         "roughness" in material
     ) {
@@ -982,7 +986,6 @@ function applyFinishToMaterial(
                 finish.roughnessMultiplier,
 
                 0.04,
-
                 1
 
             );
