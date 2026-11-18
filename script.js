@@ -262,33 +262,41 @@ function removeSurfaceTextureMaps(material) {
     return material;
 }
 
+/*
+    STATIC DARK MATERIAL
+
+    Instead of cloning the original Blender material,
+    create a completely new clean material.
+
+    This removes all original surface maps that may
+    be responsible for the striped appearance.
+*/
+
 function createDarkMaterial(originalMaterial) {
-    const material = originalMaterial.clone();
 
-    removeSurfaceTextureMaps(material);
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x292c2f,
+        roughness: 0.48,
+        metalness: 0.08,
 
-    if (material.color) {
-        material.color.set(0x292c2f);
-    }
+        map: null,
+        normalMap: null,
+        roughnessMap: null,
+        metalnessMap: null,
+        bumpMap: null,
+        displacementMap: null,
+        aoMap: null,
+        emissiveMap: null,
 
-    if ("roughness" in material) {
-        material.roughness = Math.max(
-            material.roughness,
-            0.42
-        );
-    }
-
-    if ("metalness" in material) {
-        material.metalness = Math.min(
-            material.metalness,
-            0.18
-        );
-    }
+        transparent: false,
+        opacity: 1
+    });
 
     return material;
 }
 
 function applyDarkMaterial(object) {
+
     const original =
         originalMaterials.get(object.uuid);
 
@@ -297,18 +305,22 @@ function applyDarkMaterial(object) {
     }
 
     if (Array.isArray(original)) {
+
         object.material =
             original.map(
                 material =>
                     createDarkMaterial(material)
             );
+
     } else {
+
         object.material =
             createDarkMaterial(original);
     }
 }
 
 function getInnerCushionColor() {
+
     const color = new THREE.Color(
         colorData[config.color]
     );
@@ -336,100 +348,59 @@ function getInnerCushionColor() {
     return color;
 }
 
+/*
+    SPECIAL STATIC MATERIALS
+
+    These are now also completely new materials.
+    No Blender surface maps are carried over.
+*/
+
 function createSpecialMaterial(
     originalMaterial,
     type
 ) {
-    const material =
-        originalMaterial.clone();
 
-    removeSurfaceTextureMaps(material);
+    let material;
 
     if (type === "headCushin") {
 
-        if (material.color) {
-            material.color.set(0x3a3d40);
-        }
-
-        if ("roughness" in material) {
-            material.roughness = 0.58;
-        }
-
-        if ("metalness" in material) {
-            material.metalness = 0.0;
-        }
-
-        if ("clearcoat" in material) {
-            material.clearcoat = 0.18;
-        }
-
-        if ("clearcoatRoughness" in material) {
-            material.clearcoatRoughness = 0.32;
-        }
+        material = new THREE.MeshStandardMaterial({
+            color: 0x3a3d40,
+            roughness: 0.58,
+            metalness: 0.0
+        });
 
     } else if (type === "innerShell") {
 
-        if (material.color) {
-            material.color.set(0x34383c);
-        }
-
-        if ("roughness" in material) {
-            material.roughness = 0.34;
-        }
-
-        if ("metalness" in material) {
-            material.metalness = 0.02;
-        }
-
-        if ("clearcoat" in material) {
-            material.clearcoat = 0.12;
-        }
-
-        if ("clearcoatRoughness" in material) {
-            material.clearcoatRoughness = 0.28;
-        }
+        material = new THREE.MeshStandardMaterial({
+            color: 0x34383c,
+            roughness: 0.34,
+            metalness: 0.02
+        });
 
     } else if (type === "cushion") {
 
-        if (material.color) {
-            material.color.set(0x45484b);
-        }
-
-        if ("roughness" in material) {
-            material.roughness = 0.62;
-        }
-
-        if ("metalness" in material) {
-            material.metalness = 0.0;
-        }
-
-        if ("clearcoat" in material) {
-            material.clearcoat = 0.10;
-        }
-
-        if ("clearcoatRoughness" in material) {
-            material.clearcoatRoughness = 0.38;
-        }
+        material = new THREE.MeshStandardMaterial({
+            color: 0x45484b,
+            roughness: 0.62,
+            metalness: 0.0
+        });
 
     } else if (type === "innerCushions") {
 
-        if (material.color) {
-            material.color.copy(
-                getInnerCushionColor()
-            );
-        }
+        material = new THREE.MeshStandardMaterial({
+            color: getInnerCushionColor(),
+            roughness: 0.88,
+            metalness: 0.0
+        });
 
-        if ("roughness" in material) {
-            material.roughness = 0.88;
-        }
+    } else {
 
-        if ("metalness" in material) {
-            material.metalness = 0.0;
-        }
-
-        if ("clearcoat" in material) {
-            material.clearcoat = 0.0;
-        }
+        material = new THREE.MeshStandardMaterial({
+            color: 0x34383c,
+            roughness: 0.5,
+            metalness: 0.0
+        });
     }
 
     return material;
@@ -439,6 +410,7 @@ function applySpecialMaterial(
     object,
     type
 ) {
+
     const original =
         originalMaterials.get(object.uuid);
 
@@ -447,6 +419,7 @@ function applySpecialMaterial(
     }
 
     if (Array.isArray(original)) {
+
         object.material =
             original.map(
                 material =>
@@ -455,7 +428,9 @@ function applySpecialMaterial(
                         type
                     )
             );
+
     } else {
+
         object.material =
             createSpecialMaterial(
                 original,
@@ -468,6 +443,7 @@ function applyAllSpecialMaterials() {
 
     headCushionMeshes.forEach(
         mesh => {
+
             applySpecialMaterial(
                 mesh,
                 "headCushin"
@@ -477,6 +453,7 @@ function applyAllSpecialMaterials() {
 
     innerShellMeshes.forEach(
         mesh => {
+
             applySpecialMaterial(
                 mesh,
                 "innerShell"
@@ -486,6 +463,7 @@ function applyAllSpecialMaterials() {
 
     cushionMeshes.forEach(
         mesh => {
+
             applySpecialMaterial(
                 mesh,
                 "cushion"
@@ -495,6 +473,7 @@ function applyAllSpecialMaterials() {
 
     innerCushionMeshes.forEach(
         mesh => {
+
             applySpecialMaterial(
                 mesh,
                 "innerCushions"
@@ -502,6 +481,16 @@ function applyAllSpecialMaterials() {
         }
     );
 }
+
+/*
+    INNER CUSHIONS
+
+    Important:
+    Do NOT clone the original Blender material here,
+    because that would bring the original maps back.
+
+    Always create a fresh clean material.
+*/
 
 function updateInnerCushions() {
 
@@ -511,62 +500,32 @@ function updateInnerCushions() {
     innerCushionMeshes.forEach(
         mesh => {
 
-            const original =
-                originalMaterials.get(
-                    mesh.uuid
-                );
+            const material =
+                new THREE.MeshStandardMaterial({
 
-            if (!original) {
-                return;
-            }
+                    color:
+                        cushionColor,
 
-            const applyMaterial =
-                material => {
+                    roughness:
+                        0.88,
 
-                    const cloned =
-                        material.clone();
+                    metalness:
+                        0.0,
 
-                    removeSurfaceTextureMaps(
-                        cloned
-                    );
+                    map: null,
+                    normalMap: null,
+                    roughnessMap: null,
+                    metalnessMap: null,
+                    bumpMap: null,
+                    displacementMap: null,
+                    aoMap: null,
+                    emissiveMap: null,
 
-                    if (cloned.color) {
-                        cloned.color.copy(
-                            cushionColor
-                        );
-                    }
+                    transparent: false,
+                    opacity: 1
+                });
 
-                    if ("roughness" in cloned) {
-                        cloned.roughness = 0.88;
-                    }
-
-                    if ("metalness" in cloned) {
-                        cloned.metalness = 0.0;
-                    }
-
-                    if ("clearcoat" in cloned) {
-                        cloned.clearcoat = 0.0;
-                    }
-
-                    cloned.needsUpdate = true;
-
-                    return cloned;
-                };
-
-            if (Array.isArray(original)) {
-
-                mesh.material =
-                    original.map(
-                        applyMaterial
-                    );
-
-            } else {
-
-                mesh.material =
-                    applyMaterial(
-                        original
-                    );
-            }
+            mesh.material = material;
         }
     );
 }
@@ -632,6 +591,15 @@ function applyFinishToMaterial(material) {
             );
     }
 }
+
+/*
+    CONFIGURABLE MATERIAL
+
+    These parts already worked correctly because
+    they receive completely new materials.
+
+    Keep this behavior.
+*/
 
 function createConfiguredMaterial(
     originalMaterial
@@ -714,7 +682,7 @@ function createConfiguredMaterial(
        MATTE / METAL
 
        Completely new material.
-       The original Blender material is NOT cloned.
+       No original Blender surface maps.
     */
 
     const material =
@@ -747,26 +715,31 @@ function createConfiguredMaterial(
     if (settings) {
 
         if ("roughness" in material) {
+
             material.roughness =
                 settings.roughness;
         }
 
         if ("metalness" in material) {
+
             material.metalness =
                 settings.metalness;
         }
 
         if ("transmission" in material) {
+
             material.transmission =
                 settings.transmission;
         }
 
         if ("thickness" in material) {
+
             material.thickness =
                 settings.thickness;
         }
 
         if ("opacity" in material) {
+
             material.opacity =
                 settings.opacity;
         }
@@ -831,14 +804,12 @@ function updateColor() {
 
     updateMaterial();
     updateInnerCushions();
-
 }
 
 function updateFinish() {
 
     updateMaterial();
     updateInnerCushions();
-
 }
 
 function updateLighting() {
@@ -1001,15 +972,11 @@ gltfLoader.load(
                 );
 
                 /*
-                   REBUILD GEOMETRY NORMALS
+                   Rebuild vertex normals.
 
-                   The previous material tests showed that
-                   the stripes are not coming from the surface
-                   texture maps.
-
-                   Recalculate the vertex normals from the
-                   actual imported geometry and remove imported
-                   tangent data.
+                   This is kept from the previous test,
+                   because it is harmless and ensures the
+                   imported geometry uses recalculated normals.
                 */
 
                 if (object.geometry) {
@@ -1020,8 +987,8 @@ gltfLoader.load(
                         object.geometry.attributes.normal
                     ) {
 
-                        object.geometry.attributes.normal.needsUpdate = true;
-
+                        object.geometry.attributes.normal.needsUpdate =
+                            true;
                     }
 
                     if (
@@ -1031,7 +998,6 @@ gltfLoader.load(
                         object.geometry.deleteAttribute(
                             "tangent"
                         );
-
                     }
                 }
 
@@ -1180,6 +1146,10 @@ gltfLoader.load(
             aerisModel
         );
 
+        /*
+           Apply clean materials to generic static parts.
+        */
+
         darkMeshes.forEach(
             object => {
 
@@ -1189,7 +1159,26 @@ gltfLoader.load(
             }
         );
 
+        /*
+           Apply clean materials to special static parts.
+        */
+
         applyAllSpecialMaterials();
+
+        /*
+           Apply clean materials to wires,
+           screws and hinges while preserving
+           their original base color/metalness.
+        */
+
+        originalMeshes.forEach(
+            object => {
+
+                applyOriginalStaticMaterial(
+                    object
+                );
+            }
+        );
 
         fitModelToScene();
 
