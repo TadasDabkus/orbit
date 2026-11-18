@@ -2,21 +2,16 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-
 const container = document.getElementById("productCanvas");
-
 
 if (!container) {
     throw new Error("ORBIT ERROR: #productCanvas was not found.");
 }
 
-
-
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: false
 });
-
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -25,17 +20,11 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 container.appendChild(renderer.domElement);
 
-
 console.log("ORBIT RENDERER READY");
-
-
 
 const scene = new THREE.Scene();
 
-
 scene.background = new THREE.Color(0x080909);
-
-
 
 const camera = new THREE.PerspectiveCamera(
     42,
@@ -44,16 +33,12 @@ const camera = new THREE.PerspectiveCamera(
     100
 );
 
-
 camera.position.set(0, 1.5, 6);
-
-
 
 const controls = new OrbitControls(
     camera,
     renderer.domElement
 );
-
 
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
@@ -64,33 +49,24 @@ controls.maxPolarAngle = 2.75;
 controls.target.set(0, 0, 0);
 controls.update();
 
-
-
 const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
 scene.add(ambientLight);
-
 
 const keyLight = new THREE.DirectionalLight(0xffffff, 4);
 keyLight.position.set(4, 6, 5);
 keyLight.castShadow = true;
 scene.add(keyLight);
 
-
 const fillLight = new THREE.DirectionalLight(0x9bbcff, 2);
 fillLight.position.set(-5, 2, 3);
 scene.add(fillLight);
-
 
 const rimLight = new THREE.DirectionalLight(0xc8ff00, 3);
 rimLight.position.set(0, 4, -6);
 scene.add(rimLight);
 
-
-
 const product = new THREE.Group();
 scene.add(product);
-
-
 
 const config = {
     material: "matte",
@@ -98,8 +74,6 @@ const config = {
     finish: "dark",
     lighting: "studio"
 };
-
-
 
 const materialSettings = {
     matte: {
@@ -126,16 +100,12 @@ const materialSettings = {
     }
 };
 
-
-
 const colorData = {
     black: 0x151719,
     white: 0xe7e9e6,
     orange: 0xff6b22,
     lime: 0xc8ff00
 };
-
-
 
 const finishSettings = {
     dark: {
@@ -149,15 +119,11 @@ const finishSettings = {
     }
 };
 
-
-
 const materialPrices = {
     matte: 0,
     metal: 35,
     glass: 70
 };
-
-
 
 const colorPrices = {
     black: 0,
@@ -166,34 +132,22 @@ const colorPrices = {
     lime: 20
 };
 
-
-
 const gltfLoader = new GLTFLoader();
-
-
 
 let aerisModel = null;
 
-
-
 const originalMaterials = new Map();
-
-
 
 const configurableMeshes = [];
 const originalMeshes = [];
 const darkMeshes = [];
-
 
 const headCushionMeshes = [];
 const innerShellMeshes = [];
 const cushionMeshes = [];
 const innerCushionMeshes = [];
 
-
-
 function isConfigurablePart(object) {
-
     if (!object.isMesh) {
         return false;
     }
@@ -210,10 +164,7 @@ function isConfigurablePart(object) {
     return configurableNames.includes(name);
 }
 
-
-
 function getSpecialMaterialType(object) {
-
     if (!object.isMesh) {
         return null;
     }
@@ -249,10 +200,7 @@ function getSpecialMaterialType(object) {
     return null;
 }
 
-
-
 function isOriginalPart(object) {
-
     if (!object.isMesh) {
         return false;
     }
@@ -270,10 +218,7 @@ function isOriginalPart(object) {
     );
 }
 
-
-
 function storeOriginalMaterial(object) {
-
     if (
         !object.isMesh ||
         !object.material
@@ -282,16 +227,13 @@ function storeOriginalMaterial(object) {
     }
 
     if (Array.isArray(object.material)) {
-
         originalMaterials.set(
             object.uuid,
             object.material.map(
                 material => material.clone()
             )
         );
-
     } else {
-
         originalMaterials.set(
             object.uuid,
             object.material.clone()
@@ -299,18 +241,10 @@ function storeOriginalMaterial(object) {
     }
 }
 
-
-
 function removeSurfaceTextureMaps(material) {
-
     if (!material) {
         return material;
     }
-
-    /*
-       REMOVE THE SURFACE MAPS THAT CREATE
-       THE STRIPED / CARBON-FIBER LOOK.
-    */
 
     material.map = null;
     material.normalMap = null;
@@ -328,10 +262,7 @@ function removeSurfaceTextureMaps(material) {
     return material;
 }
 
-
-
 function createDarkMaterial(originalMaterial) {
-
     const material = originalMaterial.clone();
 
     removeSurfaceTextureMaps(material);
@@ -341,30 +272,23 @@ function createDarkMaterial(originalMaterial) {
     }
 
     if ("roughness" in material) {
-
         material.roughness = Math.max(
             material.roughness,
             0.42
         );
-
     }
 
     if ("metalness" in material) {
-
         material.metalness = Math.min(
             material.metalness,
             0.18
         );
-
     }
 
     return material;
 }
 
-
-
 function applyDarkMaterial(object) {
-
     const original =
         originalMaterials.get(object.uuid);
 
@@ -373,25 +297,18 @@ function applyDarkMaterial(object) {
     }
 
     if (Array.isArray(original)) {
-
         object.material =
             original.map(
                 material =>
                     createDarkMaterial(material)
             );
-
     } else {
-
         object.material =
             createDarkMaterial(original);
-
     }
 }
 
-
-
 function getInnerCushionColor() {
-
     const color = new THREE.Color(
         colorData[config.color]
     );
@@ -419,13 +336,10 @@ function getInnerCushionColor() {
     return color;
 }
 
-
-
 function createSpecialMaterial(
     originalMaterial,
     type
 ) {
-
     const material =
         originalMaterial.clone();
 
@@ -521,13 +435,10 @@ function createSpecialMaterial(
     return material;
 }
 
-
-
 function applySpecialMaterial(
     object,
     type
 ) {
-
     const original =
         originalMaterials.get(object.uuid);
 
@@ -536,7 +447,6 @@ function applySpecialMaterial(
     }
 
     if (Array.isArray(original)) {
-
         object.material =
             original.map(
                 material =>
@@ -545,71 +455,53 @@ function applySpecialMaterial(
                         type
                     )
             );
-
     } else {
-
         object.material =
             createSpecialMaterial(
                 original,
                 type
             );
-
     }
 }
-
-
 
 function applyAllSpecialMaterials() {
 
     headCushionMeshes.forEach(
         mesh => {
-
             applySpecialMaterial(
                 mesh,
                 "headCushin"
             );
-
         }
     );
 
-
     innerShellMeshes.forEach(
         mesh => {
-
             applySpecialMaterial(
                 mesh,
                 "innerShell"
             );
-
         }
     );
 
-
     cushionMeshes.forEach(
         mesh => {
-
             applySpecialMaterial(
                 mesh,
                 "cushion"
             );
-
         }
     );
 
-
     innerCushionMeshes.forEach(
         mesh => {
-
             applySpecialMaterial(
                 mesh,
                 "innerCushions"
             );
-
         }
     );
 }
-
-
 
 function updateInnerCushions() {
 
@@ -661,7 +553,6 @@ function updateInnerCushions() {
                     return cloned;
                 };
 
-
             if (Array.isArray(original)) {
 
                 mesh.material =
@@ -675,14 +566,10 @@ function updateInnerCushions() {
                     applyMaterial(
                         original
                     );
-
             }
-
         }
     );
 }
-
-
 
 function applyFinishToMaterial(material) {
 
@@ -723,7 +610,6 @@ function applyFinishToMaterial(material) {
                     finish.colorMultiplier,
                     0.98
                 );
-
         }
 
         color.setHSL(
@@ -744,11 +630,8 @@ function applyFinishToMaterial(material) {
                 0.04,
                 1
             );
-
     }
 }
-
-
 
 function createConfiguredMaterial(
     originalMaterial
@@ -758,7 +641,6 @@ function createConfiguredMaterial(
         materialSettings[
             config.material
         ];
-
 
     /*
        GLASS
@@ -799,9 +681,7 @@ function createConfiguredMaterial(
 
                 depthWrite:
                     false
-
             });
-
 
         if (
             originalMaterial.normalScale
@@ -810,9 +690,7 @@ function createConfiguredMaterial(
             material.normalScale.copy(
                 originalMaterial.normalScale
             );
-
         }
-
 
         if (
             originalMaterial.emissive
@@ -821,37 +699,23 @@ function createConfiguredMaterial(
             material.emissive.copy(
                 originalMaterial.emissive
             );
-
         }
-
 
         applyFinishToMaterial(
             material
         );
-
 
         material.needsUpdate = true;
 
         return material;
     }
 
-
     /*
        MATTE / METAL
+
+       Completely new material.
+       The original Blender material is NOT cloned.
     */
-
-
-    /*
-       IMPORTANT:
-       Do NOT clone the original GLB material here.
-
-       The original Blender material can contain
-       hidden material properties that create the
-       striped / carbon-fiber-like appearance.
-
-       We create a completely fresh material instead.
-    */
-
 
     const material =
         new THREE.MeshStandardMaterial({
@@ -878,49 +742,35 @@ function createConfiguredMaterial(
 
             transparent: false,
             opacity: 1
-
         });
-
 
     if (settings) {
 
         if ("roughness" in material) {
-
             material.roughness =
                 settings.roughness;
-
         }
 
         if ("metalness" in material) {
-
             material.metalness =
                 settings.metalness;
-
         }
 
         if ("transmission" in material) {
-
             material.transmission =
                 settings.transmission;
-
         }
 
         if ("thickness" in material) {
-
             material.thickness =
                 settings.thickness;
-
         }
 
         if ("opacity" in material) {
-
             material.opacity =
                 settings.opacity;
-
         }
-
     }
-
 
     if (material.color) {
 
@@ -929,21 +779,16 @@ function createConfiguredMaterial(
                 config.color
             ]
         );
-
     }
-
 
     applyFinishToMaterial(
         material
     );
 
-
     material.needsUpdate = true;
 
     return material;
 }
-
-
 
 function updateMaterial() {
 
@@ -975,16 +820,12 @@ function updateMaterial() {
                     createConfiguredMaterial(
                         original
                     );
-
             }
-
         }
     );
 
     updateInnerCushions();
 }
-
-
 
 function updateColor() {
 
@@ -993,16 +834,12 @@ function updateColor() {
 
 }
 
-
-
 function updateFinish() {
 
     updateMaterial();
     updateInnerCushions();
 
 }
-
-
 
 function updateLighting() {
 
@@ -1018,9 +855,7 @@ function updateLighting() {
         rimLight.color.set(
             0xc8ff00
         );
-
     }
-
 
     if (
         config.lighting === "night"
@@ -1034,9 +869,7 @@ function updateLighting() {
         rimLight.color.set(
             0x4d7cff
         );
-
     }
-
 
     if (
         config.lighting === "neon"
@@ -1050,11 +883,8 @@ function updateLighting() {
         rimLight.color.set(
             0xc8ff00
         );
-
     }
 }
-
-
 
 function updateUI() {
 
@@ -1064,19 +894,16 @@ function updateUI() {
         glass: "Glass"
     };
 
-
     const finishNames = {
         dark: "Dark",
         light: "Light"
     };
-
 
     const lightingNames = {
         studio: "Studio",
         night: "Night",
         neon: "Neon"
     };
-
 
     const materialValue =
         document.getElementById(
@@ -1089,9 +916,7 @@ function updateUI() {
             materialNames[
                 config.material
             ];
-
     }
-
 
     const finishValue =
         document.getElementById(
@@ -1104,9 +929,7 @@ function updateUI() {
             finishNames[
                 config.finish
             ];
-
     }
-
 
     const lightingValue =
         document.getElementById(
@@ -1119,9 +942,7 @@ function updateUI() {
             lightingNames[
                 config.lighting
             ];
-
     }
-
 
     const price =
         299 +
@@ -1132,7 +953,6 @@ function updateUI() {
             config.color
         ];
 
-
     const productPrice =
         document.getElementById(
             "productPrice"
@@ -1142,9 +962,7 @@ function updateUI() {
 
         productPrice.textContent =
             `€${price}`;
-
     }
-
 
     const configurationName =
         document.getElementById(
@@ -1155,11 +973,8 @@ function updateUI() {
 
         configurationName.textContent =
             `AERIS / ${config.color.toUpperCase()}`;
-
     }
 }
-
-
 
 gltfLoader.load(
 
@@ -1171,10 +986,8 @@ gltfLoader.load(
             "AERIS GLB LOADED"
         );
 
-
         aerisModel =
             gltf.scene;
-
 
         aerisModel.traverse(
             object => {
@@ -1183,15 +996,47 @@ gltfLoader.load(
                     return;
                 }
 
-
                 storeOriginalMaterial(
                     object
                 );
 
+                /*
+                   REBUILD GEOMETRY NORMALS
+
+                   The previous material tests showed that
+                   the stripes are not coming from the surface
+                   texture maps.
+
+                   Recalculate the vertex normals from the
+                   actual imported geometry and remove imported
+                   tangent data.
+                */
+
+                if (object.geometry) {
+
+                    object.geometry.computeVertexNormals();
+
+                    if (
+                        object.geometry.attributes.normal
+                    ) {
+
+                        object.geometry.attributes.normal.needsUpdate = true;
+
+                    }
+
+                    if (
+                        object.geometry.hasAttribute("tangent")
+                    ) {
+
+                        object.geometry.deleteAttribute(
+                            "tangent"
+                        );
+
+                    }
+                }
 
                 object.castShadow = true;
                 object.receiveShadow = true;
-
 
                 if (
                     isConfigurablePart(
@@ -1211,12 +1056,10 @@ gltfLoader.load(
                     return;
                 }
 
-
                 const specialType =
                     getSpecialMaterialType(
                         object
                     );
-
 
                 if (specialType) {
 
@@ -1228,9 +1071,7 @@ gltfLoader.load(
                         headCushionMeshes.push(
                             object
                         );
-
                     }
-
 
                     if (
                         specialType ===
@@ -1240,9 +1081,7 @@ gltfLoader.load(
                         innerShellMeshes.push(
                             object
                         );
-
                     }
-
 
                     if (
                         specialType ===
@@ -1252,9 +1091,7 @@ gltfLoader.load(
                         cushionMeshes.push(
                             object
                         );
-
                     }
-
 
                     if (
                         specialType ===
@@ -1264,9 +1101,7 @@ gltfLoader.load(
                         innerCushionMeshes.push(
                             object
                         );
-
                     }
-
 
                     console.log(
                         "SPECIAL MATERIAL:",
@@ -1276,7 +1111,6 @@ gltfLoader.load(
 
                     return;
                 }
-
 
                 if (
                     isOriginalPart(
@@ -1296,67 +1130,55 @@ gltfLoader.load(
                     return;
                 }
 
-
                 darkMeshes.push(
                     object
                 );
-
 
                 console.log(
                     "DARK:",
                     object.name
                 );
-
             }
         );
-
 
         console.log(
             "Configurable meshes:",
             configurableMeshes.length
         );
 
-
         console.log(
             "Original meshes:",
             originalMeshes.length
         );
-
 
         console.log(
             "Dark meshes:",
             darkMeshes.length
         );
 
-
         console.log(
             "Head cushion meshes:",
             headCushionMeshes.length
         );
-
 
         console.log(
             "Inner shell meshes:",
             innerShellMeshes.length
         );
 
-
         console.log(
             "Cushion meshes:",
             cushionMeshes.length
         );
-
 
         console.log(
             "Inner cushion meshes:",
             innerCushionMeshes.length
         );
 
-
         product.add(
             aerisModel
         );
-
 
         darkMeshes.forEach(
             object => {
@@ -1364,16 +1186,12 @@ gltfLoader.load(
                 applyDarkMaterial(
                     object
                 );
-
             }
         );
 
-
         applyAllSpecialMaterials();
 
-
         fitModelToScene();
-
 
         updateMaterial();
         updateColor();
@@ -1382,18 +1200,15 @@ gltfLoader.load(
         updateLighting();
         updateUI();
 
-
         const loader =
             document.querySelector(
                 ".loading-screen"
             );
 
-
         if (loader) {
 
             loader.style.opacity = "0";
             loader.style.pointerEvents = "none";
-
 
             setTimeout(
                 () => {
@@ -1404,16 +1219,12 @@ gltfLoader.load(
                 },
                 500
             );
-
         }
-
 
         console.log(
             "AERIS READY"
         );
-
     },
-
 
     progress => {
 
@@ -1427,24 +1238,18 @@ gltfLoader.load(
                     ) * 100
                 );
 
-
             const loadingProgress =
                 document.getElementById(
                     "loadingProgress"
                 );
 
-
             if (loadingProgress) {
 
                 loadingProgress.textContent =
                     `${percent}%`;
-
             }
-
         }
-
     },
-
 
     error => {
 
@@ -1453,25 +1258,18 @@ gltfLoader.load(
             error
         );
 
-
         const loadingProgress =
             document.getElementById(
                 "loadingProgress"
             );
 
-
         if (loadingProgress) {
 
             loadingProgress.textContent =
                 "ERROR";
-
         }
-
     }
-
 );
-
-
 
 function fitModelToScene() {
 
@@ -1479,37 +1277,30 @@ function fitModelToScene() {
         return;
     }
 
-
     const box =
         new THREE.Box3()
             .setFromObject(
                 aerisModel
             );
 
-
     const size =
         box.getSize(
             new THREE.Vector3()
         );
-
 
     const center =
         box.getCenter(
             new THREE.Vector3()
         );
 
-
     aerisModel.position.x -=
         center.x;
-
 
     aerisModel.position.y -=
         center.y;
 
-
     aerisModel.position.z -=
         center.z;
-
 
     const maxDimension =
         Math.max(
@@ -1518,9 +1309,7 @@ function fitModelToScene() {
             size.z
         );
 
-
     const targetSize = 3.6;
-
 
     if (
         maxDimension > 0
@@ -1530,16 +1319,12 @@ function fitModelToScene() {
             targetSize /
             maxDimension;
 
-
         aerisModel.scale.setScalar(
             scale
         );
-
     }
 
-
     aerisModel.position.y = 0;
-
 
     camera.position.set(
         0,
@@ -1547,19 +1332,14 @@ function fitModelToScene() {
         6
     );
 
-
     controls.target.set(
         0,
         0,
         0
     );
 
-
     controls.update();
-
 }
-
-
 
 document
     .querySelectorAll(
@@ -1583,26 +1363,19 @@ document
                                 )
                         );
 
-
                     button.classList.add(
                         "active"
                     );
 
-
                     config.material =
                         button.dataset.material;
 
-
                     updateMaterial();
                     updateUI();
-
                 }
             );
-
         }
     );
-
-
 
 document
     .querySelectorAll(
@@ -1626,26 +1399,19 @@ document
                                 )
                         );
 
-
                     button.classList.add(
                         "active"
                     );
 
-
                     config.color =
                         button.dataset.color;
 
-
                     updateColor();
                     updateUI();
-
                 }
             );
-
         }
     );
-
-
 
 document
     .querySelectorAll(
@@ -1669,26 +1435,19 @@ document
                                 )
                         );
 
-
                     button.classList.add(
                         "active"
                     );
 
-
                     config.finish =
                         button.dataset.finish;
 
-
                     updateFinish();
                     updateUI();
-
                 }
             );
-
         }
     );
-
-
 
 document
     .querySelectorAll(
@@ -1712,31 +1471,23 @@ document
                                 )
                         );
 
-
                     button.classList.add(
                         "active"
                     );
 
-
                     config.lighting =
                         button.dataset.lighting;
 
-
                     updateLighting();
                     updateUI();
-
                 }
             );
-
         }
     );
-
-
 
 const cameraPositions = {
 
     front: {
-
         position:
             new THREE.Vector3(
                 0,
@@ -1750,12 +1501,9 @@ const cameraPositions = {
                 0,
                 0
             )
-
     },
 
-
     side: {
-
         position:
             new THREE.Vector3(
                 6,
@@ -1769,12 +1517,9 @@ const cameraPositions = {
                 0,
                 0
             )
-
     },
 
-
     detail: {
-
         position:
             new THREE.Vector3(
                 3.4,
@@ -1788,12 +1533,9 @@ const cameraPositions = {
                 0.1,
                 0
             )
-
     },
 
-
     top: {
-
         position:
             new THREE.Vector3(
                 0,
@@ -1807,12 +1549,8 @@ const cameraPositions = {
                 0,
                 0
             )
-
     }
-
 };
-
-
 
 document
     .querySelectorAll(
@@ -1830,37 +1568,28 @@ document
                             button.dataset.camera
                         ];
 
-
                     if (!preset) {
                         return;
                     }
-
 
                     camera.position.copy(
                         preset.position
                     );
 
-
                     controls.target.copy(
                         preset.target
                     );
 
-
                     controls.update();
-
                 }
             );
-
         }
     );
-
-
 
 const addConfiguration =
     document.getElementById(
         "addConfiguration"
     );
-
 
 if (addConfiguration) {
 
@@ -1873,20 +1602,16 @@ if (addConfiguration) {
                     "configurationMessage"
                 );
 
-
             if (!message) {
                 return;
             }
 
-
             message.textContent =
                 "CONFIGURATION SAVED";
-
 
             message.classList.add(
                 "visible"
             );
-
 
             setTimeout(
                 () => {
@@ -1898,13 +1623,9 @@ if (addConfiguration) {
                 },
                 2200
             );
-
         }
     );
-
 }
-
-
 
 window.addEventListener(
     "resize",
@@ -1914,37 +1635,27 @@ window.addEventListener(
             window.innerWidth /
             window.innerHeight;
 
-
         camera.updateProjectionMatrix();
-
 
         renderer.setSize(
             window.innerWidth,
             window.innerHeight
         );
-
     }
 );
-
-
 
 function animate() {
 
     controls.update();
-
 
     renderer.render(
         scene,
         camera
     );
 
-
     requestAnimationFrame(
         animate
     );
-
 }
-
-
 
 animate();
