@@ -246,6 +246,11 @@ function removeSurfaceTextureMaps(material) {
         return material;
     }
 
+    /*
+       REMOVE THE SURFACE MAPS THAT CREATE
+       THE STRIPED / CARBON-FIBER LOOK.
+    */
+
     material.map = null;
     material.normalMap = null;
     material.roughnessMap = null;
@@ -261,16 +266,6 @@ function removeSurfaceTextureMaps(material) {
 
     return material;
 }
-
-/*
-    STATIC DARK MATERIAL
-
-    Instead of cloning the original Blender material,
-    create a completely new clean material.
-
-    This removes all original surface maps that may
-    be responsible for the striped appearance.
-*/
 
 function createDarkMaterial(originalMaterial) {
 
@@ -347,13 +342,6 @@ function getInnerCushionColor() {
 
     return color;
 }
-
-/*
-    SPECIAL STATIC MATERIALS
-
-    These are now also completely new materials.
-    No Blender surface maps are carried over.
-*/
 
 function createSpecialMaterial(
     originalMaterial,
@@ -482,16 +470,6 @@ function applyAllSpecialMaterials() {
     );
 }
 
-/*
-    INNER CUSHIONS
-
-    Important:
-    Do NOT clone the original Blender material here,
-    because that would bring the original maps back.
-
-    Always create a fresh clean material.
-*/
-
 function updateInnerCushions() {
 
     const cushionColor =
@@ -503,14 +481,9 @@ function updateInnerCushions() {
             const material =
                 new THREE.MeshStandardMaterial({
 
-                    color:
-                        cushionColor,
-
-                    roughness:
-                        0.88,
-
-                    metalness:
-                        0.0,
+                    color: cushionColor,
+                    roughness: 0.88,
+                    metalness: 0.0,
 
                     map: null,
                     normalMap: null,
@@ -592,15 +565,6 @@ function applyFinishToMaterial(material) {
     }
 }
 
-/*
-    CONFIGURABLE MATERIAL
-
-    These parts already worked correctly because
-    they receive completely new materials.
-
-    Keep this behavior.
-*/
-
 function createConfiguredMaterial(
     originalMaterial
 ) {
@@ -680,66 +644,43 @@ function createConfiguredMaterial(
 
     /*
        MATTE / METAL
-
-       Completely new material.
-       No original Blender surface maps.
     */
 
     const material =
-        new THREE.MeshStandardMaterial({
+        originalMaterial.clone();
 
-            color:
-                colorData[
-                    config.color
-                ],
+    /*
+       REMOVE ORIGINAL GLB SURFACE MAPS
+       BEFORE APPLYING MATTE / METAL.
+    */
 
-            roughness:
-                settings?.roughness ?? 0.5,
-
-            metalness:
-                settings?.metalness ?? 0.0,
-
-            map: null,
-            normalMap: null,
-            roughnessMap: null,
-            metalnessMap: null,
-            bumpMap: null,
-            displacementMap: null,
-            aoMap: null,
-            emissiveMap: null,
-
-            transparent: false,
-            opacity: 1
-        });
+    removeSurfaceTextureMaps(
+        material
+    );
 
     if (settings) {
 
         if ("roughness" in material) {
-
             material.roughness =
                 settings.roughness;
         }
 
         if ("metalness" in material) {
-
             material.metalness =
                 settings.metalness;
         }
 
         if ("transmission" in material) {
-
             material.transmission =
                 settings.transmission;
         }
 
         if ("thickness" in material) {
-
             material.thickness =
                 settings.thickness;
         }
 
         if ("opacity" in material) {
-
             material.opacity =
                 settings.opacity;
         }
@@ -947,6 +888,89 @@ function updateUI() {
     }
 }
 
+/*
+    STATIC ORIGINAL PARTS
+
+    These are:
+    - AERIS_Hinges
+    - AERIS_Wire_L
+    - AERIS_Wire_R
+    - AERIS_Screws
+
+    We preserve their original base color,
+    roughness and metalness, but create a
+    completely new clean material without
+    Blender texture maps.
+*/
+
+function applyOriginalStaticMaterial(object) {
+
+    const original =
+        originalMaterials.get(object.uuid);
+
+    if (!original) {
+        return;
+    }
+
+    function createCleanOriginalMaterial(
+        originalMaterial
+    ) {
+
+        const material =
+            new THREE.MeshStandardMaterial({
+
+                color:
+                    originalMaterial.color
+                        ? originalMaterial.color.clone()
+                        : new THREE.Color(
+                            0x34383c
+                        ),
+
+                roughness:
+                    "roughness" in originalMaterial
+                        ? originalMaterial.roughness
+                        : 0.5,
+
+                metalness:
+                    "metalness" in originalMaterial
+                        ? originalMaterial.metalness
+                        : 0.0,
+
+                map: null,
+                normalMap: null,
+                roughnessMap: null,
+                metalnessMap: null,
+                bumpMap: null,
+                displacementMap: null,
+                aoMap: null,
+                emissiveMap: null,
+
+                transparent: false,
+                opacity: 1
+            });
+
+        return material;
+    }
+
+    if (Array.isArray(original)) {
+
+        object.material =
+            original.map(
+                material =>
+                    createCleanOriginalMaterial(
+                        material
+                    )
+            );
+
+    } else {
+
+        object.material =
+            createCleanOriginalMaterial(
+                original
+            );
+    }
+}
+
 gltfLoader.load(
 
     "./AERIS_v01.glb",
@@ -972,11 +996,11 @@ gltfLoader.load(
                 );
 
                 /*
-                   Rebuild vertex normals.
+                   Recalculate geometry normals.
 
-                   This is kept from the previous test,
-                   because it is harmless and ensures the
-                   imported geometry uses recalculated normals.
+                   This removes dependency on imported
+                   tangent data and gives the geometry
+                   fresh vertex normals.
                 */
 
                 if (object.geometry) {
@@ -992,7 +1016,9 @@ gltfLoader.load(
                     }
 
                     if (
-                        object.geometry.hasAttribute("tangent")
+                        object.geometry.hasAttribute(
+                            "tangent"
+                        )
                     ) {
 
                         object.geometry.deleteAttribute(
@@ -1147,7 +1173,8 @@ gltfLoader.load(
         );
 
         /*
-           Apply clean materials to generic static parts.
+           Apply clean material to generic
+           static dark parts.
         */
 
         darkMeshes.forEach(
@@ -1160,15 +1187,16 @@ gltfLoader.load(
         );
 
         /*
-           Apply clean materials to special static parts.
+           Apply clean material to special
+           static parts.
         */
 
         applyAllSpecialMaterials();
 
         /*
-           Apply clean materials to wires,
-           screws and hinges while preserving
-           their original base color/metalness.
+           Apply clean material to original
+           small parts such as hinges,
+           wires and screws.
         */
 
         originalMeshes.forEach(
